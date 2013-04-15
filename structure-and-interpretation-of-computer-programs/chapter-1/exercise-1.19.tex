@@ -1,0 +1,51 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\newcommand{\Fib}[1][]{\ensuremath{\text{Fib}(#1)}}
+\newcommand{\tif}{\ensuremath{\text{if} \;}}
+\newcommand{\s}{\sqrt{5}}
+
+\begin{document}
+
+\[
+	\begin{aligned}
+		a_1 &= b_0q + a_0q + a_0p \\
+		b_1 &= b_0p + a_0q \\
+		a_2 &= b_1q + a_1q + a_1p \\
+		b_2 &= b_1p + a_1q
+	\end{aligned}
+\]
+
+\[
+	\begin{aligned}
+		a_2 &= (b_0p + a_0q)q + (b_0q + a_0q + a_0p)q + (b_0q + a_0q + a_0p)p \\
+		b_2 &= (b_0p + a_0q)p + (b_0q + a_0q + a_0p)q
+	\end{aligned}
+\]
+
+Let's do $a_2$ first.
+
+\[
+	\begin{aligned}
+		a_2 &= (b_0p + a_0q)q + (b_0q + a_0q + a_0p)q + (b_0q + a_0q + a_0p)p \\
+		a_2 &= b_0pq + a_0q^2 + b_0q^2 + a_0q^2 + a_0pq + b_0pq + a_0pq + a_0p^2 \\
+		a_2 &= b_0pq +  b_0q^2 + b_0pq +  a_0q^2  + a_0q^2 + a_0pq +  a_0pq + a_0p^2 \\
+		a_2 &= b_0(q^2 + 2pq) + a_0(q^2 + 2pq)  + a_0(p^2 + q^2)
+	\end{aligned}
+\]
+
+Now we should have $q' = q^2 + 2pq$ and $p' = p^2 + q^2$, and this should check
+out on the $b$ transformation.
+
+\[
+	\begin{aligned}
+		b_2 &= (b_0p + a_0q)p + (b_0q + a_0q + a_0p)q \\
+		b_2 &= b_0p^2 + a_0pq + b_0q^2 + a_0q^2 + a_0pq \\
+		b_2 &= b_0p^2 + b_0q^2 + 2a_0pq + a_0q^2  \\
+		b_2 &= b_0(p^2 + q^2) + a_0(q^2 + 2pq) \\
+		b_2 &= b_0p' + a_0q' \\
+	\end{aligned}
+\]
+
+\end{document}

@@ -1,0 +1,150 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\newcommand{\Fib}[1][]{\ensuremath{\text{Fib}(#1)}}
+\newcommand{\tif}{\ensuremath{\text{if} \;}}
+\newcommand{\s}{\sqrt{5}}
+
+\begin{document}
+
+\[
+	\Fib[n] = \begin{cases}
+		0                         & \tif n = 0 \\
+		1                         & \tif n = 1 \\
+		\Fib[n - 1] + \Fib[n - 2] & \text{otherwise} 
+	\end{cases}
+\]
+
+By induction prove that:
+\[
+	\Fib[n] = \frac{(\varphi^n - \psi^n)}{\s}
+\]
+
+\section{Base case}
+
+For $n = 0$
+\[
+	\begin{aligned}
+   	\Fib[0] = 0 \\
+		\frac{\varphi^0 - \psi^0}{\s} = 0
+	\end{aligned}
+\]
+
+For $n = 1$
+
+\[
+	\Fib[1] = 1 
+\]
+\[
+	\begin{aligned}
+		\frac{\varphi^1 - \psi^1}{\s}  &= \frac{(1 + \s) - (1 - \s)}{2\s}  \\
+		& = \frac{2 \s}{2 \s} \\
+		& = 1 
+	\end{aligned}
+\]
+
+For $n = 2$
+
+\[
+	\Fib[2] = 1 
+\]
+\[
+	\begin{aligned}
+		\frac{\varphi^2 - \psi^2}{\s}  &= \frac{(1 + \s)^2 - (1 - \s)^2}{2^2\s}  \\
+		& = \frac{1 + 2\s + \s^2 - (1 - 2\s + \s^2)}{4 \s} \\
+		& = \frac{2\s + 2\s}{4 \s} \\
+		& = \frac{4\s}{4 \s} \\
+		& = 1 
+	\end{aligned}
+\]
+
+True. 
+
+\section{Inductive step:}
+
+Assume 
+\[
+	\Fib[n] = \frac{(\varphi^n - \psi^n)}{\s}
+\]
+\[
+	\Fib[n - 1] = \frac{\varphi^{n - 1} - \psi^{n - 1}}{\s}
+\]
+
+Is it true that:
+\[
+	\Fib[n - 1] = \frac{\varphi^{n + 1} - \psi^{n + 1}}{\s}
+\]
+
+\[
+	\begin{aligned}
+	  \Fib[n + 1] & = \frac{(\varphi^n - \psi^n)}{\s} + \frac{\varphi^{n - 1} - \psi^{n - 1}}{\s} \\
+	  &= \frac{\varphi^n - \psi^n + \varphi^{n - 1} - \psi^{n - 1}}{\s} \\
+	  &= \frac{\varphi^n + \varphi^{n - 1} - \psi^n - \psi^{n - 1}}{\s} \\
+	  &= \frac{\varphi^{n-1} (\varphi + 1) - (\psi^{n -1} (\psi + 1))}{\s}
+   \end{aligned}
+\]
+
+We would like $\varphi + 1 = \varphi^2$, is it so?
+\[
+	\begin{aligned}
+	  \varphi + 1 &= \frac{1 + \s}{2} + 1\\
+	  &= \frac{2 (1 + \s)}{4} + \frac{4}{4}\\
+	  &= \frac{2 + 2\s + 4}{4} \\
+	  &= \frac{1 + 1 + 2\s + 4}{4} \\
+	  &= \frac{1 + 2\s + 5}{4} \\
+	  &= \frac{(1 + \s)^2}{2^2} \\
+	  &= \left(\frac{1 + \s}{2} \right)^2 \\
+	  &= \varphi^2
+   \end{aligned}
+\]
+By analogy we see that $\psi + 1$ will be equal to $\psi^2$.
+
+\[
+\begin{aligned}
+	  \Fib[n + 1] &= \frac{\varphi^{n-1} (\varphi + 1) - (\psi^{n -1} (\psi + 1))}{\s} \\
+		&= \frac{\varphi^{n-1} \varphi^2 - \psi^{n -1} \psi^2}{\s} \\
+		&= \frac{\varphi^{n+1} - \psi^{n + 1}}{\s} 
+\end{aligned}
+\]
+
+QED
+
+\section{Proove that $\Fib[n]$ is the closest integer to $\frac{\varphi^n}{\s}$}
+
+We know that:
+\[
+	\Fib[n] = \frac{\varphi^n + \psi^n}{\s}
+\]
+
+We need to prove that the distance between $\Fib[n]$ and $\frac{\varphi^n}{\s}$
+is less or equal to $\frac{1}{2}$ (if it's more then there exists an integer that
+s closer).
+
+\[
+	\begin{aligned}
+		\left | \Fib[n] - \frac{\varphi^n}{\s} \right| & \le \frac{1}{2} \\
+		\left | \frac{\varphi^n + \psi^n}{\s}  - \frac{\varphi^n}{\s} \right| & \le \frac{1}{2} \\
+		\left | \frac{ \psi^n}{\s} \right| & \le \frac{1}{2} \\
+		\left | \psi^n \right| & \le \frac{\s}{2} \\
+	\end{aligned}
+\]
+
+\[
+	\frac{\sqrt{5}}{2} \approx 1.12 > 1
+\]
+\[
+   \left | \frac{1 - \s}{2} \right| \approx 0.62 < 1
+\]
+
+From exponentation we know what if $x < 1$ then $x^n < 1 \; \forall n > 0$
+
+\[
+   \left | \phi^n \right| < \frac{\sqrt{5}}{2}
+\]
+
+Is true.
+
+% (
+
+\end{document}

@@ -792,3 +792,228 @@ A/A
 
 (reverse x)
 (deep-reverse x)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.28
+;; -------------
+;; 
+
+(define (fringe tree)
+  (if (null? tree)
+    tree
+    (let (
+        (branch (car tree))
+        (rest   (cdr tree)))
+      (if (list? branch)
+        (append (fringe branch) (fringe rest))
+        (cons branch (fringe (cdr tree)))))))
+    
+(define x (list (list 1 2) (list 3 4)))
+
+(fringe x)
+
+(fringe (list x x))
+./
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.29
+;; -------------
+;; 
+
+
+;; a
+
+(define (make-mobile left right)
+  (list left right))
+
+(define (make-branch length structure)
+  (list length structure))
+
+(define (left-branch mobile)
+  (car mobile))
+
+(define (right-branch mobile)
+  (cadr mobile))
+
+(define (branch-length branch)
+  (car branch))
+
+(define (branch-structure branch)
+  (cadr branch))
+
+(left-branch (make-mobile (make-branch 1 2) (make-branch 3 4)))
+(right-branch (make-mobile (make-branch 1 2) (make-branch 3 4)))
+(branch-length (make-branch 1 2)) 
+(branch-structure (make-branch 1 2)) 
+
+;; b
+
+(define (is-mobile? m) 
+  (list? m))
+
+(define (branch-weight branch)
+  (let (
+      (structure (branch-structure branch)))
+    (if (is-mobile? structure)
+      (total-weight structure)
+      structure)))
+
+(define (total-weight mobile)
+  (+ (branch-weight (left-branch mobile)) 
+     (branch-weight (right-branch mobile))))
+
+(define x 
+  (make-mobile 
+    (make-branch 1 1)
+    (make-branch 1 2)))
+
+(total-weight x)
+(total-weight 
+  (make-mobile 
+    (make-branch 1 x)
+    (make-branch 2 x)))
+
+;; c
+
+
+(define (balanced? mobile)
+  (define (torque branch)
+    (* (branch-length branch)
+       (branch-weight branch)))
+  (define (branch-submodules-balanced branch)
+    (let (
+        (structure (branch-structure branch)))
+      (if (is-mobile? structure)
+        (balanced? structure)
+        #t)))
+  (let (
+      (left (left-branch mobile))
+      (right (right-branch mobile)))
+    (and
+      (= (torque left) (torque right))
+      (branch-submodules-balanced left)
+      (branch-submodules-balanced right))))
+       
+(define x 
+  (make-mobile 
+    (make-branch 1 2)
+    (make-branch 2 1)))
+
+(define x-x
+  (make-mobile
+    (make-branch 4 x)
+    (make-branch 4 x)))
+
+(define x<x
+  (make-mobile
+    (make-branch 2 x)
+    (make-branch 4 x)))
+
+(define y
+  (make-mobile
+    (make-branch 2 x<x)
+    (make-branch 2 x-x)))
+    
+
+(balanced? x)
+(balanced? x-x)
+(balanced? x<x)
+(balanced? y)
+
+
+;; d
+
+; not-same :
+(define (make-mobile left right)
+  (cons left right))
+
+(define (make-branch length structure)
+  (cons length structure))
+ 
+(define (right-branch mobile)
+  (cdr mobile))
+
+(define (branch-length branch)
+  (car branch))
+
+(define (is-mobile? x)
+  (pair? x))
+
+; stays same:
+
+
+(define (left-branch mobile)
+  (car mobile))
+
+(define (branch-structure branch)
+  (cdr branch))
+
+(left-branch (make-mobile (make-branch 1 2) (make-branch 3 4)))
+(right-branch (make-mobile (make-branch 1 2) (make-branch 3 4)))
+(branch-length (make-branch 1 2)) 
+(branch-structure (make-branch 1 2)) 
+
+(define (branch-weight branch)
+  (let (
+      (structure (branch-structure branch)))
+    (if (is-mobile? structure)
+      (total-weight structure)
+      structure)))
+
+(define (total-weight mobile)
+  (+ (branch-weight (left-branch mobile)) 
+     (branch-weight (right-branch mobile))))
+
+(define x 
+  (make-mobile 
+    (make-branch 1 1)
+    (make-branch 1 2)))
+
+(total-weight x)
+(total-weight 
+  (make-mobile 
+    (make-branch 1 x)
+    (make-branch 2 x)))
+
+(define (balanced? mobile)
+  (define (torque branch)
+    (* (branch-length branch)
+       (branch-weight branch)))
+  (define (branch-submodules-balanced branch)
+    (let (
+        (structure (branch-structure branch)))
+      (if (is-mobile? structure)
+        (balanced? structure)
+        #t)))
+  (let (
+      (left (left-branch mobile))
+      (right (right-branch mobile)))
+    (and
+      (= (torque left) (torque right))
+      (branch-submodules-balanced left)
+      (branch-submodules-balanced right))))
+       
+(define x 
+  (make-mobile 
+    (make-branch 1 2)
+    (make-branch 2 1)))
+
+(define x-x
+  (make-mobile
+    (make-branch 4 x)
+    (make-branch 4 x)))
+
+(define x<x
+  (make-mobile
+    (make-branch 2 x)
+    (make-branch 4 x)))
+
+(define y
+  (make-mobile
+    (make-branch 2 x<x)
+    (make-branch 2 x-x)))
+    
+
+(balanced? x)
+(balanced? x-x)
+(balanced? x<x)
+(balanced? y)

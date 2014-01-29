@@ -778,12 +778,17 @@ A/A
     xs
     (append (reverse (cdr xs)) (list (car xs)))))
 
-(deep-reverse 
+(define (deep-reverse xs)
   (if (null? xs)
     xs
     (let (
         (x (car xs))
         (tail (cdr xs)))
       (if (list? x)
-        (append (deep-reverse)
+        (append (deep-reverse tail) (list (deep-reverse x)))
+        (append (deep-reverse tail) (list x))))))
 
+(define x (list (list 1 2) (list 3 4)))
+
+(reverse x)
+(deep-reverse x)

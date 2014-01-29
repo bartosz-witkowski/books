@@ -1,0 +1,49 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+\newcommand{\Fib}[1][]{\ensuremath{\text{Fib}(#1)}}
+\newcommand{\tif}{\ensuremath{\text{if} \;}}
+\newcommand{\s}{\sqrt{5}}
+
+\begin{document}
+
+\section{Completness}
+
+Let $X, Y \in \mathbb{N}$ such that $X \le Y$
+
+If $Y = 0$ then because \texttt{natural\_number} is complete there exists a proof
+tree which can be extended to for \texttt{0 $\le$ Y}.
+
+Otherwise 
+$X$ equals $s^n(0)$ for some $n$, $Y$ equals $s^m(0)$ for some $m, m \ge n$. We can write
+a proof tree:
+
+\[
+\begin{aligned}
+   s^n(0)    & \le s^m(0) \\
+   s^{n-1}(0) & \le s^{m-1}(0) \\
+   & \ldots \\
+   0          & \le s^{m-n}(0) \\
+\end{aligned}
+\]
+\[
+\texttt{natural\_number}(s^{m-n}(0)) 
+\]
+
+\section{Correctness}
+
+Proof by induction on X. Suppose that $\le$ is deducible from program $3.2$ in
+$n$ steps. If $n = 0$ the goal is proved - because we know that
+\texttt{natural\_number} is correct and $0 \le Y$ is the indented meaning of
+program $3.2$.
+
+For $n > 0$ the proof must be in the form:
+\[
+   s(X') \le s(Y')
+\]
+and $X' \le Y'$ is deducible in $n - 1$ steps. By the induction hypothesis
+program $3.2$ is correct.
+
+\end{document}

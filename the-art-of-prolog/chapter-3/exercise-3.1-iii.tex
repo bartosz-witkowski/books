@@ -1,0 +1,74 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+\newcommand{\n}{\texttt{natural\_number}}
+
+\begin{document}
+
+A not so rigorous proof by induction:
+
+For $n, m = 0$:
+
+\[
+   \begin{aligned}
+      \le(0, 0) & \longrightarrow \n(0) \\
+         & \longrightarrow 0 
+   \end{aligned}
+\]
+
+Proof tree depth = 2.
+
+For $m > 0$ and for some $n_1 \le m$:
+
+\[
+   \begin{aligned}
+      \le(s^{n_1}(0), s^{m}(0)) & \longrightarrow \le(s^{n_1-1}(0), s^{m-1}(0)) \\
+         & \longrightarrow  \le(s^{n_1-2}(0), \le s^{m-2}(0)) \\
+         & \ldots \\
+         & \longrightarrow \le(s(0), s^{m-n_1+1}(0)) \\
+         & \longrightarrow \le(0,  s^{m-n_1}(0)) \\
+         & \longrightarrow \n(s^{m-n_1}) \\
+         & \ldots \\
+         & \longrightarrow \n(s(0)) \\
+         & \longrightarrow \n(0) \\
+   \end{aligned}
+\]
+
+$k = m - 1$
+
+\[
+   \begin{aligned}
+      \le(s^{n_2}(0), s^{k}(0)) & \longrightarrow \le(s^{n_2-1}(0), s^{k-1}(0)) \\
+         & \longrightarrow  \le(s^{n_2-2}(0), \le s^{k-2}(0)) \\
+         & \ldots \\
+         & \longrightarrow \le(s(0), s^{k-n_2+1}(0)) \\
+         & \longrightarrow \le(0,  s^{k-n_2}(0)) \\
+         & \longrightarrow \n(s^{k-n_2}) \\
+         & \ldots \\
+         & \longrightarrow \n_2(s(0)) \\
+         & \longrightarrow \n_2(0) \\
+   \end{aligned}
+\]
+
+Which is just:
+
+\[
+   \begin{aligned}
+      \le(s^{n_2}(0), s^{m-1}(0)) & \longrightarrow \le(s^{n_2-1}(0), s^{m-2}(0)) \\
+         & \longrightarrow  \le(s^{n_2-2}(0), \le s^{m-3}(0)) \\
+         & \ldots \\
+         & \longrightarrow \le(s(0), s^{m-n_2+1}(0)) \\
+         & \longrightarrow \le(0,  s^{m-n_2}(0)) \\
+         & \longrightarrow \n(s^{m-n_2}) \\
+         & \ldots \\
+         & \longrightarrow \n_2(s(0)) \\
+         & \longrightarrow \n_2(0) \\
+   \end{aligned}
+\]
+
+The trees for $k$ and $m$ are the same but one step so by the induction
+hypothesis the 
+
+\end{document}

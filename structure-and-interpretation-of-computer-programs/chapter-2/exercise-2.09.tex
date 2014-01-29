@@ -1,0 +1,62 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\newcommand \w[0]{\text{width}}
+
+\begin{document}
+
+\[
+   \w([a, b]) = \frac{b - a}{2}.
+\]
+
+Sum:
+
+\[
+\begin{aligned}
+  \, [a, b] + [c, d] & = [a + c, b + d] \\
+   \w([a + c, b + d]) &= \frac{b + d - (a + c)}{2} \\
+      & = \frac{b - a}{2} + \frac{d - c}{2} \\
+      & = \w([a, b]) + \w([c, d])
+\end{aligned}
+\]
+
+Difference:
+
+\[
+\begin{aligned}
+   \, [a, b] - [c, d] & = [a - d, b - c] \\
+   \w([a - d, b - c]) &= \frac{b - c - (a - d)}{2} \\
+      & = \frac{b - a -  c + d}{2} \\
+      & = \frac{b - a}{2} + \frac{d - c}{2} \\
+      & = \w([a,b]) + \w([c, d])
+\end{aligned}
+\]
+
+Multiplication:
+
+\[
+   \begin{aligned}
+      \w([1, 2]) & = \frac{1}{2} \\
+      \w([2, 4]) & = 1 \\
+      \\
+      \w([1, 2] \cdot [2, 4]) & = \w( 
+         [\min(1 \cdot 2, 1 \cdot 4, 2 \cdot 2, 2 \cdot 4,
+          \max(1 \cdot 2, 1 \cdot 4, 2 \cdot 2, 2 \cdot 4
+         ]
+      ) \\
+      & = \w([2, 8]) \\
+      & = 3
+   \end{aligned}
+\]
+
+We can find another interval with the width $1$ for example
+
+$\w([5, 7]) = 1$ and now 
+
+\[
+   \w([1, 2] \cdot [5, 7]) = \w([5, 14]) = 4.5
+\]
+
+The same principle applies to division.
+\end{document}

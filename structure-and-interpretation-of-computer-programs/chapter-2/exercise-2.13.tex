@@ -1,0 +1,82 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\newcommand \w[0]{\text{width}}
+\renewcommand \c[0]{\text{center}}
+\renewcommand \t[0]{\text{tolerance}}
+
+\[
+   \begin{aligned}
+      \, [a, b] \cdot [c, d] = \left[
+         \min(ac, ad, bc, bd), 
+         \max(ac, ad, bc, bd)
+      \right]
+   \end{aligned}
+\]
+
+Assuming that all numbers are positive
+
+\[
+   \begin{aligned}
+      \, [a, b] \cdot [c, d] = \left[ ac, bd \right]
+   \end{aligned}
+\]
+
+Lets find the exact formula:
+
+\[
+   \begin{aligned}
+      \w([ac, bd]) &= \frac{ac - bd}{2}. \\
+      \c([ac, bd]) &= \frac{ac + bd}{2}. \\
+      \t([ac, bd]) &= \frac{\w([ac, bd])}{\c([ac,bd])} \\
+         &= \frac{
+            \frac{ac - bd}{2}
+         }{
+            \frac{ac + bd}{2}
+         } \\
+         & = \frac{ac - bd}{2}
+             \frac{2}{ac + bd} \\
+         & = \frac{ac - bd}{ac + bd} \\
+   \end{aligned}
+\]
+
+\[
+   \begin{aligned}
+      \t([a, b]) &= \frac{a - b}{a + b} \\
+      \t([c, d]) &= \frac{c - d}{c + d} \\
+   \end{aligned}
+\]
+\[
+   \begin{aligned}
+      \frac{a - b}{a + b} + \frac{c - d}{c + d} & = 
+      \frac{(a - b)(c + d)}{(a + b)(c + d)} + \frac{(c - d)(a + b)}{(c + d)(a +
+b)} \\
+      = &
+      \frac{ac + ad - bc - bd}{ac + ad + bc + bd} + 
+      \frac{ca + cb - da - db}{ac + ad + bc + bc} \\
+      = &
+      \frac{2ac - 2ad}{ac + ad + bc + bd}  \\
+      = 2 \frac{ac - ad}{ac + bd + ad + bc}  \\
+   \end{aligned}
+\]
+
+If we assume:
+\[
+   \begin{aligned}
+   ad \approx ac \\
+   bc \approx bd
+   \end{aligned}
+\]
+
+Then
+\[
+   \begin{aligned}
+   2 \frac{ac - ad}{ac + bd + ad + bc} & \approx 2 \frac{ac - ad}{2 ac + 2 bd} \\
+    & = \frac{ac - ad}{ac + bd} \\
+   \end{aligned}
+\]
+
+\end{document}

@@ -813,7 +813,7 @@ A/A
 (fringe x)
 
 (fringe (list x x))
-./
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Exercise 2.29
 ;; -------------
@@ -1017,3 +1017,101 @@ A/A
 (balanced? x-x)
 (balanced? x<x)
 (balanced? y)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.30
+;; -------------
+;; 
+
+(define (square x) 
+  (* x x))
+
+(define nil '())
+
+(define (square-tree tree)
+  (cond ((null? tree) nil)
+        ((not (pair? tree)) (square tree))
+        (else (cons (square-tree (car tree))
+                    (square-tree (cdr tree))))))
+
+(square-tree
+  (list 1
+        (list 2 (list 3 4) 5)
+        (list 6 7)))
+
+; the task is meh - let's define a tree map instead 
+
+(define (square-tree tree)
+  (map (lambda (sub-tree)
+          (if (pair? sub-tree)
+              (square-tree sub-tree)
+              (square sub-tree)))
+       tree))
+  
+(square-tree
+  (list 1
+        (list 2 (list 3 4) 5)
+        (list 6 7)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.31
+;; -------------
+;; 
+
+(define (map-tree f tree)
+  (map (lambda (sub-tree)
+          (if (pair? sub-tree)
+              (map-tree f sub-tree)
+              (f sub-tree)))
+       tree))
+  
+(define (square-tree tree)
+  (map-tree square tree))
+
+(square-tree
+  (list 1
+        (list 2 (list 3 4) 5)
+        (list 6 7)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.32
+;; -------------
+;; 
+
+(define (subsets s)
+  (define (add-head xs)
+    (cons s xs))
+  (if (null? s)
+    (list nil)
+    (let ((rest (subsets (cdr s))))
+      (append rest (map add-head rest)))))
+
+(subsets (list 1 2 3))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.33
+;; -------------
+;; 
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+
+(define (map p sequence)
+  (accumulate (lambda (x y) (cons (p x) y)) nil sequence))
+
+(map (lambda (x) (+ x 1)) (list 1 2 3 4))
+
+(define (append seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+(append (list 1 2 3 4) (list 5 6 7 8))
+
+(define (length sequence)
+  (accumulate (lambda (x y) (+ 1 y)) 0 sequence))
+
+(length (list 1 2 3 4 5))

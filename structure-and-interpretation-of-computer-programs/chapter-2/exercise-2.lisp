@@ -1115,3 +1115,46 @@ A/A
   (accumulate (lambda (x y) (+ 1 y)) 0 sequence))
 
 (length (list 1 2 3 4 5))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.34
+;; -------------
+;; 
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (horner-eval x coefficient-sequence)
+  (accumulate (lambda (this-coeff higher-terms) 
+                (+ this-coeff (* x higher-terms)))
+              0
+              coefficient-sequence))
+
+(horner-eval 2 (list 1 3 0 5 0 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.35
+;; -------------
+;; 
+
+(define (count-leaves tree)
+  (accumulate 
+    + 
+    0 
+    (map 
+      (lambda (x)
+        (if (pair? x)
+          (count-leaves x)
+          1))
+       tree)))
+
+(define x (cons (list 1 2) (list 3 4)))
+
+(count-leaves x)
+
+(count-leaves (list x x))
+
+

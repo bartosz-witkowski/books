@@ -1157,4 +1157,67 @@ A/A
 
 (count-leaves (list x x))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.36
+;; -------------
+;; 
 
+(define (accumulate-n op init seqs)
+  (define nil '())
+  (if (null? (car seqs))
+    nil
+    (cons (accumulate op init (map car seqs))
+          (accumulate-n op init (map cdr seqs)))))
+
+
+(define xs (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
+
+(accumulate-n + 0 xs)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.37
+;; -------------
+;; 
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (matrix-*-vector m v)
+  (define (row-and-vector-combine r v)
+    (accumulate + 0 (accumulate-n * 1 (list r v))))
+  (map (lambda (x) (row-and-vector-combine x v)) m))
+
+(define X 
+  (list (list 1 2 3)
+        (list 4 5 6)
+        (list 7 8 9)))
+
+(define v (list 1 2 3))
+
+(matrix-*-vector X v)
+
+;;
+
+(define (transpose mat)
+  (accumulate-n cons '() mat))
+
+(transpose X)
+
+;;
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map 
+      (lambda (x) 
+        (accumulate-n matrix-*-vector '() cols)) 
+      m)))
+
+(define I 
+  (list (list 1 0 0)
+        (list 0 1 0)
+        (list 0 0 1)))
+  
+(matrix-*-matrix I X)

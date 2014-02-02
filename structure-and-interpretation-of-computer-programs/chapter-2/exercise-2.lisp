@@ -1210,10 +1210,7 @@ A/A
 
 (define (matrix-*-matrix m n)
   (let ((cols (transpose n)))
-    (map 
-      (lambda (x) 
-        (accumulate-n matrix-*-vector '() cols)) 
-      m)))
+    (map (lambda (row) (matrix-*-vector cols row)) m)))
 
 (define I 
   (list (list 1 0 0)
@@ -1221,3 +1218,57 @@ A/A
         (list 0 0 1)))
   
 (matrix-*-matrix I X)
+(matrix-*-matrix X I)
+(matrix-*-matrix X X)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.38
+;; -------------
+;; 
+
+(fold-right / 1 (list 1 2 3))
+(/ 1 (/ 2 (/ 3 1)))
+
+(fold-left / 1 (list 1 2 3)) 
+(/ (/ (/ 1 1) 2) 3)
+
+
+;
+; \forall x, y \in X x `op` y = y `op` x
+;
+ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.39
+;; -------------
+;; 
+;;
+
+(define (fold-right op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+      result
+      (iter (op result (car rest))
+            (cdr rest))))
+  (iter initial sequence))
+
+
+(define nil '())
+
+;;
+
+(define (reverse sequence)
+  (fold-right (lambda (x y) (append y (list x))) nil sequence))
+
+(reverse (list 1 2 3 4 5))
+
+(define (reverse sequence)
+  (fold-left (lambda (x y) (cons y x)) nil sequence))
+
+(reverse (list 1 2 3 4 5))
+

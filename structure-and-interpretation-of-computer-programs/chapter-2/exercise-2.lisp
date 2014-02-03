@@ -1241,13 +1241,12 @@ A/A
 ;; Exercise 2.39
 ;; -------------
 ;; 
-;;
 
 (define (fold-right op initial sequence)
   (if (null? sequence)
     initial
     (op (car sequence)
-        (accumulate op initial (cdr sequence)))))
+        (fold-right op initial (cdr sequence)))))
 
 (define (fold-left op initial sequence)
   (define (iter result rest)
@@ -1272,3 +1271,98 @@ A/A
 
 (reverse (list 1 2 3 4 5))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.40
+;; -------------
+;; 
+
+(define (enumerate-interval low high)
+  (if (> low high)
+    nil
+    (cons low (enumerate-interval (+ low 1) high))))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (fold-right op initial (cdr sequence)))))
+
+
+(define (filter predicate sequence)
+  (cond ((null? sequence) nil)
+        ((predicate (car sequence))
+         (cons (car sequence)
+               (filter predicate (cdr sequence))))
+        (else (filter predicate (cdr sequence)))))
+
+(define (flatmap proc seq)
+  (accumulate append nil (map proc seq)))
+
+(define (unique-pairs n)
+  (define (pred pair)
+    (let (
+        (i (car pair))
+        (j (cadr pair)))
+      (<  j i)))
+  (let (
+      (interval (enumerate-interval 1 n)))
+    (filter pred 
+            (flatmap 
+              (lambda (i)
+                (map (lambda (j) (list i j)) interval))
+              interval))))
+
+(unique-pairs 3)
+
+(define (prime? n)
+  (define (square x) (* x x))
+  (define (smallest-divisor n)
+    (find-divisor n 2))
+  (define (find-divisor n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor)
+          (else (find-divisor n (+ test-divisor 1)))))
+  (define (divides? a b)
+    (= (remainder b a) 0))
+  (= n (smallest-divisor n)))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair))))
+
+(define (prime-sum-pairs n)
+ (filter prime-sum? (unique-pairs n)))
+        
+(prime-sum-pairs 10)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.41
+;; -------------
+;; 
+
+(define (distinct-ordered-triples n)
+  (define (pred triple)
+    (let (
+        (i (car triple))
+        (j (cadr triple))
+        (k (caddr triple)))
+      (and (<  i j)
+           (<  j k))))
+  (let (
+      (interval (enumerate-interval 1 n)))
+    (filter pred 
+            (flatmap 
+              (lambda (i)
+                (flatmap 
+                  (lambda (j) 
+                    (map (lambda (k) (list i j k)) interval))
+                  interval))
+              interval))))
+
+(distinct-ordered-triples 3)
+
+(define (distinct-ordered-triples-summing-to n sum)
+  (filter 
+    (lambda (triple) (= sum (accumulate + 0 triple)))
+    (distinct-ordered-triples n)))
+
+(distinct-ordered-triples-summing-to 100 100)

@@ -1366,3 +1366,160 @@ A/A
     (distinct-ordered-triples n)))
 
 (distinct-ordered-triples-summing-to 100 100)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.42
+;; -------------
+;; 
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+    initial
+    (op (car sequence)
+        (accumulate op initial (cdr sequence)))))
+
+
+(define (filter predicate sequence)
+  (cond ((null? sequence) nil)
+        ((predicate (car sequence))
+         (cons (car sequence)
+               (filter predicate (cdr sequence))))
+        (else (filter predicate (cdr sequence)))))
+
+(define (flatmap proc seq)
+  (accumulate append nil (map proc seq)))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+    nil
+    (cons low (enumerate-interval (+ low 1) high))))
+
+(define nil '())
+
+;                        
+ 
+(define (adjoin-position new-row k rest-of-queens)
+  (cons (new-position new-row k) rest-of-queens))
+
+(define (new-position row column)
+  (list row column))
+
+(define (position-row position)
+  (car position))
+
+(define (position-column position)
+  (cadr position))
+
+(define empty-board '())
+
+(define this-position (list 2 3))
+(define that-position (list 3 2))
+(safe-by-diagonals this-position that-position)
+
+(define (safe-helper this-position others)
+  (define (safe-by-row p1 p2)
+    (not (= (position-row p1) (position-row p2))))
+  (define (safe-by-column p1 p2)
+    (not (= (position-column p1) (position-column p2))))
+  (define (safe-by-diagonals p1 p2)
+    (let (
+      (delta-column (- (position-column p1) (position-column p2)))
+      (delta-row    (- (position-row p1) (position-row p2))))
+  (not (= (abs delta-row) (abs delta-column)))))
+  (if (null? others)
+    #t
+    (let (
+        (that-position (car others)))
+      (and 
+         (safe-by-row this-position that-position)
+         (safe-by-column this-position that-position)
+         (safe-by-diagonals this-position that-position)
+         (safe-helper this-position (cdr others))))))
+
+(safe-helper (new-position 4 2) (list (new-position 1 1)))
+(safe-helper (list 4 4) (list (list 4 3) (list 4 2) (list 4 1)))
+
+(safe-helper (list 2 3) (list (list 3 2) (list 1 1)))
+
+(define (safe? k positions)
+  (define (this-column? p)
+    (= (position-column p) k))
+  (let (
+      (this-position (car (filter this-column? positions)))
+      (other-positions (filter (lambda (p) (not (this-column? p))) positions)))
+    (safe-helper this-position other-positions)))
+
+
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+      (list empty-board)
+      (filter
+        (lambda (positions) (safe? k positions))
+        (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position new-row
+                                    k
+                                    rest-of-queens))
+                 (enumerate-interval 1 board-size)))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size))
+
+
+; checking solutions manualy
+(queens 4)
+
+;   1 2 3 4
+; 1   #
+; 2       #
+; 3 #  
+; 4     #
+;
+
+;   1 2 3 4
+; 1     #
+; 2 #      
+; 3       #
+; 4   #  
+ 
+; checking by sizes:
+; http://en.wikipedia.org/wiki/Eight_queens_puzzle#Counting_solutions
+(= (length (queens 8)) 92)
+(= (length (queens 9)) 352)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.43
+;; -------------
+;; 
+
+
+;  "Our version"
+(flatmap
+  (lambda (rest-of-queens)
+    (map (lambda (new-row)
+           (adjoin-position new-row
+                            k
+                            rest-of-queens))
+         (enumerate-interval 1 board-size)))
+  (queen-cols (- k 1)))
+
+; "Luises version"
+(flatmap
+  (lambda (new-row)
+    (map (lambda (rest-of-queens)
+           (adjoin-position new-row 
+                            k 
+                            rest-of-queens))
+         (queen-cols (- k 1))))
+  (enumerate-interval 1 board-size))
+
+; The queen-cols call is done needlesly in the inner map for 
+; k = 8 we do 8 * n-calls(queen-cols(k-1)) calls. 
+; this expands to k! calls of queen-cols 
+; 
+; This doesn't tell the whole story because the time characteristics of one call
+; to queen-cols will be different between those two versions we can
+; approximately say that Luises version will take about (7! * T) more time.
+
+

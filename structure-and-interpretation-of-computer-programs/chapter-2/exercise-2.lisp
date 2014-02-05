@@ -1523,3 +1523,147 @@ A/A
 ; approximately say that Luises version will take about (7! * T) more time.
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The picture language
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.44
+;; -------------
+;; 
+
+(define (up-split painter n)
+  (if (= n 0)
+    painter
+    (let ((smaller (up-split painter (- n 1))))
+      (below painter (beside smaller smaller)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.45
+;; -------------
+;; 
+
+(define (split split-1 split-2)
+  (if (= n 0)
+    painter
+    (let ((smaller (split painter (- n 1))))
+      (split-1 painter (split-2 smaller smaller)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.46
+;; -------------
+;; 
+
+(define (make-vect x y)
+  (cons x y))
+
+(define (xcor-vect vect)
+  (car vect))
+
+(define (ycor-vect)
+  (cdr vect))
+
+(define (add-vect v1 v2)
+  (make-vect (+ (xcor-vect v1) (xcor-vect v2))
+             (+ (ycor-vect v1) (ycor-vect v2))))
+
+(define (sub-vect v1 v2)
+  (make-vect (- (xcor-vect v1) (xcor-vect v2))
+             (- (ycor-vect v1) (ycor-vect v2))))
+
+(define (scale-vect v s)
+  (make-vect (* s (xcor-vect v)) 
+             (* s (ycor-vect v))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.47
+;; -------------
+;; 
+
+(define origin 1)
+(define edge1  2)
+(define edge2  3)
+
+;; 1
+
+(define (make-frame origin edge1 edge2)
+  (list origin edge1 edge2))
+
+(define (frame-origin frame)
+  (car frame))
+
+(define (frame-edge1 frame)
+  (cadr frame))
+
+(define (frame-edge2 frame)
+  (caddr frame))
+
+(define frame (make-frame origin edge1 edge2))
+
+(= (frame-origin frame) origin)
+(= (frame-edge1 frame) edge1)
+(= (frame-edge2 frame) edge2)
+
+;; 2
+
+(define (make-frame origin edge1 edge2)
+  (cons origin (cons edge1 edge2)))
+
+(define (frame-origin frame)
+  (car frame))
+
+(define (frame-edge1 frame)
+  (cadr frame))
+
+(define (frame-edge2 frame)
+  (cddr frame))
+
+(define frame (make-frame origin edge1 edge2))
+
+(= (frame-origin frame) origin)
+(= (frame-edge1 frame) edge1)
+(= (frame-edge2 frame) edge2)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.48
+;; -------------
+;;
+
+(define (make-segment v1 v2)
+  (cons v1 v2))
+
+(define (start-segment s)
+  (car s))
+
+(define (end-segment s)
+  (cdr s))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.49
+;; -------------
+;;
+
+(define (frame-coord-map frame)
+  (lambda (v)
+    (add-vect
+      (origin-frame frame)
+      (add-vect (scale-vect (xcor-vect v)
+                            (edge1-frame frame))
+                (scale-vect (ycor-vect v)
+                            (edge2-frame frame))))))
+
+
+(make-frame 
+  (make-vect 0 0)
+  (make-vect 0 1)
+  (make-vect 1 1))
+
+(segments->painter (list (make-vect 0 0) (make-vect 1 1) (make-vect 0 1) (make-vect 1 0)))
+
+(define (outline-painter frame)
+  (
+  )
+  

@@ -1646,24 +1646,118 @@ A/A
 ;; -------------
 ;;
 
-(define (frame-coord-map frame)
-  (lambda (v)
-    (add-vect
-      (origin-frame frame)
-      (add-vect (scale-vect (xcor-vect v)
-                            (edge1-frame frame))
-                (scale-vect (ycor-vect v)
-                            (edge2-frame frame))))))
+
+(define (opposed-to-origin frame)
+  (add-vect (frame-origin frame)
+            (add-vect (frame-edge1 frame)
+                      (frame-edge2 frame))))
+
+(define (midpoint v1 v2)
+  (define (average a b)
+    (/ (+ a b) 2))
+  (make-vect
+    (average (xcor-vect v1) (xcor-vect v2))
+    (average (ycor-vect v1) (ycor-vect v2))))
+
+(define (segment-list-from-point-list point-list)
+  (if (< (length point-list) 2)
+      (error "The point list must be at least 2 in size")
+      (let (
+          (first-segment (make-segment (car point-list) (cadr point-list)))
+          (other-points  (cddr point-list)))
+        (fold-left 
+                (lambda (acc point) 
+                  (cons (make-segment (end-segment (car acc)) point) acc))
+                (list first-segment)
+                other-points))))
 
 
-(make-frame 
-  (make-vect 0 0)
-  (make-vect 0 1)
-  (make-vect 1 1))
-
-(segments->painter (list (make-vect 0 0) (make-vect 1 1) (make-vect 0 1) (make-vect 1 0)))
+(define x (segment-list-from-point-list 
+  (list
+    (make-vect 0 0)
+    (make-vect 1 1)
+    (make-vect 2 2)
+    (make-vect 3 3))))
+  
 
 (define (outline-painter frame)
-  (
-  )
-  
+  (define segment-list
+    (let (
+        (origin (frame-origin frame))
+        (edge1  (frame-edge1 frame))
+        (edge2  (frame-edge2 frame)))
+        (opposed (opposed-to-origin frame))
+      (segment-list-from-point-list 
+        (list origin edge1 opposed edge2 origin))))
+  (segments->painter segment-list))
+
+(define (x-painter frame)
+  (define segment-list
+    (list 
+      (make-segment (frame-origin frame) (opposed-to-origin frame))
+      (make-segment (frame-edge1 frame) (frame-edge2 frame))))
+  (segments->painter segment-list))
+
+
+(define (diamond-painter frame)
+  (define segment-list
+    (let (
+        (origin (frame-origin frame))
+        (edge1  (frame-edge1 frame))
+        (edge2  (frame-edge2 frame)))
+        (opposed (opposed-to-origin frame))
+      (let (
+          (a (midpoint origin edge1))
+          (b (midpoint edge1 opposed))
+          (c (midpoint opposed edge2))
+          (d (midpoint edge2 origin)))
+        (segment-list-from-point-list 
+          (list a b c d)))))
+  (segments->painter segment-list))
+
+;;
+
+(require graphics/graphics)
+
+(define vp (open-viewport "A Picture Language" 500 500))
+
+(define draw (draw-viewport vp))
+(define (clear) ((clear-viewport vp)))
+(define line (draw-line vp))
+
+;need a wrapper function so that the graphics library works with my code...
+(define (vector-to-posn v)
+  (make-posn (car v) (car (cdr v))))
+
+(define (segments->painter segment-list)   
+  (lambda (frame)     
+   (for-each     
+     (lambda (segment)        
+      (line         
+        (vector-to-posn ((frame-coord-map frame) (start-segment segment)))         
+        (vector-to-posn ((frame-coord-map frame) (end-segment segment)))))      
+      segment-list)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.50
+;; -------------
+;;
+
+(define (flip-horiz painter)
+  (transform-painter painter
+                     (make-vect 1 0)
+                     (make-vect 0 0)
+                     (make-vect 1 1)))
+
+
+(define (rotate-180 painter)
+  (transform-painter painter
+                     (make-vect 1 1)
+                     (make-vect 0 1)
+                     (make-vect 1 0)))
+
+(define (rotate-270 painter)
+  (transform-painter painter
+                     (make-vect 0 1)
+                     (make-vect 0 0)
+                     (make-vect 1 0)))

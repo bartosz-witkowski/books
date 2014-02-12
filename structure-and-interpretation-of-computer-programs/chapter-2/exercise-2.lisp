@@ -2140,12 +2140,3 @@ TODO!
 (deriv '(** x 2) 'x)
 (deriv '(** x x) 'x)
 (deriv '(* (** x 0) x) 'x)
-
-
-(deriv '(** x n) 'x)
-;Value: (* n (** x (+ n -1)))
-
-(deriv '(** (+ (* 3 x) y) 1) 'x)
-;Value: 3
-
-(deriv '(** (+ (** x 2) 1) 2) 'x)

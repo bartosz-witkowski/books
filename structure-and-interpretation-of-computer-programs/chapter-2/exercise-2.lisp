@@ -1991,9 +1991,9 @@ TODO!
 ; #f
 
 (define (memq item x)
-(cond ((null? x) false)
-((eq? item (car x)) x)
-(else (memq item (cdr x)))))
+  (cond ((null? x) false)
+        ((eq? item (car x)) x)
+        (else (memq item (cdr x)))))
 
 
 (memq 'red '((red shoes) (blue socks)))
@@ -2063,7 +2063,7 @@ TODO!
 ; (quote (quote abracadabra)) is (quote abracabra) the car of which is quote
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 2.55
+;; 2.56
 ;; -------------
 ;;
 
@@ -2140,3 +2140,284 @@ TODO!
 (deriv '(** x 2) 'x)
 (deriv '(** x x) 'x)
 (deriv '(* (** x 0) x) 'x)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.57
+;; -------------
+;;
+
+
+(define (augend s)
+  (let (
+    (augends (cddr s)))
+    (fold-left make-sum (car augends) (cdr augends))))
+    
+(define (multiplicand p) 
+  (let (
+    (multiplicands (cddr p)))
+    (fold-left make-sum (car multiplicands) (cdr multiplicands))))
+
+(deriv '(* x y (+ x 3)) 'x)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.58
+;; -------------
+;;
+
+; deriv defined as before:
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp)
+         (if (same-variable? exp var) 1 0))
+        ((sum? exp)
+         (make-sum (deriv (addend exp) var)
+                   (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+           (make-product (multiplier exp)
+                         (deriv (multiplicand exp) var))
+           (make-product (deriv (multiplier exp) var)
+                         (multiplicand exp))))
+        (else
+          (error "unknown expression type - DERIV" exp))))
+;
+
+(define (variable? x) (symbol? x))
+
+(define (same-variable? v1 v2)
+  (and (variable? v1) (variable? v2) (eq? v1 v2)))
+
+(define (sum? x)
+  (and (pair? x) (eq? (cadr x) '+)))
+(define (addend s) (car s))
+(define (augend s) (caddr s))
+
+(define (product? x)
+  (and (pair? x) (eq? (cadr x) '*)))
+(define (multiplier p) (car p))
+(define (multiplicand p) (caddr p))
+
+(define (exists x xs)
+  (if (null? xs)
+    #f 
+    (if (= x (car xs))
+        #t
+        (exists x (cdr xs)))))
+
+
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2)) (+ a1 a2))
+        (else (list a1 '+ a2))))
+
+; (define (make-sum a1 a2)
+;   (define (make-sum-list xs))
+;
+;   (cond ((=number? a1 0) a2)
+;         ((=number? a2 0) a1)
+;         ((and (number? a1) (number? a2)) (+ a1 a2))
+;         ((and (list? a1) (list? a2)) (fold-left make-sum-list a1 a2))
+;         ((list? a1) (make-sum-list a1 a2))
+;         ((list? a2) (make-sum-list a2 a1))
+;         (else (list a1 '+ a2))))
+
+
+(define (=number? exp num)
+  (and (number? exp) (= exp num)))
+
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (number? m1) (number? m2)) (* m1 m2))
+        (else (list m1 '* m2))))
+
+
+(deriv '(x + (3 * (x + (y + 2)))) 'x)
+
+;;;;
+; b
+;
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp)
+         (if (same-variable? exp var) 1 0))
+        ((sum? exp)
+         (make-sum (deriv (addend exp) var)
+                   (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+           (make-product (multiplier exp)
+                         (deriv (multiplicand exp) var))
+           (make-product (deriv (multiplier exp) var)
+                         (multiplicand exp))))
+        (else
+          (error "unknown expression type - DERIV" exp))))
+
+(define (variable? x) (symbol? x))
+
+(define (same-variable? v1 v2)
+  (and (variable? v1) (variable? v2) (eq? v1 v2)))
+ 
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (number? a1) (number? a2)) (+ a1 a2))
+        (else (list a1 '+ a2))))
+
+(define (=number? exp num)
+  (and (number? exp) (= exp num)))
+
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (number? m1) (number? m2)) (* m1 m2))
+        (else (list m1 '* m2))))
+ 
+; (x + (3 * (x + (y + 2))))
+; (x +  3 * (x +  y + 2))
+;
+; (x * 4 + 5) 
+; ((x * 4) + 5)
+;
+; (x + 3 + 4)
+;
+; (3 * x + 4 * y + 5 * z)
+; ((3 * 4) + (4 * y) + (5 * z))
+;
+ 
+(define (sum? x)
+  (eq? (lowest-precedence-operator x) '+))
+
+(define (product? x)
+  (eq? (lowest-precedence-operator x) '*))
+
+(define (lowest-precedence-operator exp)
+  (cond 
+    ((memq '+ exp) '+)
+    ((memq '* exp) '*)
+    (else          nil)))
+
+(define (split xs y)
+  (define (helper acc list-acc xs)/
+    (if (null? xs)
+      (reverse (cons (reverse acc) list-acc))
+      (let (
+          (x (car xs))
+          (rest (cdr xs)))
+        (if (eq? x y)
+          (helper nil (cons (reverse acc) list-acc) rest)
+          (helper (cons x acc) list-acc rest)))))
+  (if (null? xs) 
+    nil
+    (helper (list (car xs)) nil (cdr xs))))
+
+(split '(3 * x + 4 * y + 5 * z) '+)
+
+(define (interleave fragments sym)
+    (cond
+      ((null? fragments) '())
+      ((= (length fragments) 1) (car fragments))
+      (else 
+        (append 
+          (append (car fragments) (list sym)) 
+          (interleave (cdr fragments) sym)))))
+
+(interleave (split '(4) '+) '+)
+
+(define (extract-if-singleton xs)
+  (if (= (length xs) 1)
+      (car xs)
+      xs))
+
+(define (fst exp op)
+  (let (
+      (s (split exp op)))
+    (extract-if-singleton (car s))))
+
+(define (snd exp op)
+  (let (
+      (s (split exp op)))
+    (extract-if-singleton (interleave (cdr s) op))))
+
+(define (addend exp) (fst exp '+))
+(define (multiplier exp) (fst exp '*))
+
+(define (augend exp) (snd exp '+))
+(define (multiplicand exp) (snd exp '*))
+  
+(addend '(3 * x + 4 * y + 5 * z))
+(addend '(x + 4 * y + 5 * z))
+
+(augend '(3 * x + 4 * y + 5 * z))
+(augend '(3 * x + 4 * y + 5))
+
+(augend '(x + 3 * (x + y + 2)))
+
+(define exp '(x + 3 * (x + y + 2)))
+(define var 'x)
+
+(deriv '(x + 3 * (x + y + 2)) 'x)
+(deriv '(x + 3) 'x)
+(deriv '(x * y * (x + 3)) 'x)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.59
+;; -------------
+;;
+
+(define (element-of-set? x set)
+  (cond ((null? set) false)
+        ((equal? x (car set)) true)
+        (else (element-of-set? x (cdr set)))))
+
+(define (adjoin-set x set)
+  (if (element-of-set? x set)
+    set
+    (cons x set)))
+
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) '())
+        ((element-of-set? (car set1) set2)
+         (cons (car set1)
+               (intersection-set (cdr set1) set2)))
+        (else (intersection-set (cdr set1) set2))))
+
+(define (union-set set1 set2)
+  (fold-right adjoin-set set2 set1))
+
+(union-set '(a b c d) '(c d e f))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.60
+;; -------------
+;;
+;;
+
+; not changed
+(define (element-of-set? x set)
+  (cond ((null? set) false)
+        ((equal? x (car set)) true)
+        (else (element-of-set? x (cdr set)))))
+
+
+; not changed
+(define (intersection-set set1 set2)
+  (cond ((or (null? set1) (null? set2)) '())
+        ((element-of-set? (car set1) set2)
+         (cons (car set1)
+               (intersection-set (cdr set1) set2)))
+        (else (intersection-set (cdr set1) set2))))
+
+(define (adjoin-set x set)
+    (cons x set))
+
+(define (union-set set1 set2)
+  (append set1 set2))
+
+; motivation - many uses of adjoin-set and/or uninion-set versus element-of-set 

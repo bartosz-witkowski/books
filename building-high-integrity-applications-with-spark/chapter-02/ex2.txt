@@ -1,0 +1,114 @@
+2.1 
+The with clause imports a module e.g:
+  with Ada.Text_IO;
+
+------------------------------------------------------------------------
+2.2
+The declarative part of an Ada program is located at the beginning of the
+listing after possible module declarations.
+------------------------------------------------------------------------
+2.3
+a) formal parameter
+  The name of a parameter as "seen" in a declaration of some subprogram.
+b) actual parameter
+  The actual variables as seen in the usage of some subprogram.
+c) dependent expression
+  An expression that depends on the condition of an if expression/statement
+d) loop parameter
+  A variable declared in a loop (and which scope doesn't extend out of the loop)
+  that's used to control the loop iteration
+e) scope
+  IOW the visibility (where something can be seen) i.e the scope of a variable, procedure, function, module etc
+f) local variable
+  A variable which scope is a local procedure / function
+g) global variable
+  A variable which scope is the entire program.
+h) data type
+  A classification of the data that determines its representation and usage
+i) model number
+  A floating point number which can represent a real number exactly without
+  approximation.
+j) attribute
+  An accessor of a property of a particular type e.g Integer'First
+
+------------------------------------------------------------------------
+2.4 
+In Ada/SPARK parameters of a procedure/function (or an array) can be associated
+either by it's position e.g `foo(bar, baz)` or foo(parameter_2 => baz,
+parameter_1 => bar)
+
+------------------------------------------------------------------------
+2.5
+The use clause imports a module and adds the fully qualified names from the
+import to the scope.
+
+------------------------------------------------------------------------
+2.6
+Ada is not case sensitive
+
+------------------------------------------------------------------------
+2.8
+`and then` vs `and` and `or` vs `or else` are short-circuiting i.e they will not
+evaluate the second argument unless strictly necessary.
+
+------------------------------------------------------------------------
+2.9
+Only those that mutate a single argument in their body e.g
+if A in 	
+
+------------------------------------------------------------------------
+2.10
+Because it modifies both the Success variable as well as H
+
+------------------------------------------------------------------------
+2.12
+False if the range is null the loop doesn't execute.
+
+------------------------------------------------------------------------
+2.15
+Data type defines the set of possible values and a set of operations can be
+performed with those values.
+
+------------------------------------------------------------------------
+2.16
+Complex types represent two dimensional values and cannot be uniquely expressed
+by a single value.
+
+------------------------------------------------------------------------
+2.17
+Because there's infinitely many numbers between 5.3 and 5.2. On the other hand
+such a successor would make sense for a fixed point format with "the point"
+moved one place to the left
+
+------------------------------------------------------------------------
+2.18
+
+a) relative error - the measurement of distance is probably influenced by such a
+relative error in any case
+b) absolute error - making no errors on higher altitudes is no less important than
+not making them on lower ones
+c) relative error makes more sense - fuel is only critical when there's not a
+lot of it so it's totally fine to have higher error margins when the tank is
+full
+d) absolute error makes more sense - here any error is unacceptable but a $10000
+is a lot no matter if that's relative to $20000 or $2M.
+
+------------------------------------------------------------------------
+2.20
+The type is atomic because there's only three possible choices and each of the
+choice excludes the other ones. Naturally this isn't a scalar type because:
+1) paper > rock 
+2) rock > scissors
+3) scissors > paper 
+which doesn't obey any sensible laws of ordering.
+
+------------------------------------------------------------------------
+2.21
+The component of an array may be any type.
+The index of an array may be any discrete type.
+
+------------------------------------------------------------------------
+2.25
+  name : String; 
+isn't allowed because Ada doesn't allow array types (which String is really one)
+which size isn't known at compile time.

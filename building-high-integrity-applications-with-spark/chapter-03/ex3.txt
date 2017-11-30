@@ -1,0 +1,110 @@
+3.1
+The with clause imports a module, use adds the imported module to the scope.
+
+------------------------------------------------------------------------
+3.2
+
+a) Encapsulation
+Bundling of related resources and the separation of specification from
+implementation.
+
+b) Information hiding
+Hiding of accidental details of implementation from the user.
+
+c) Definition package
+A module that groups related constants and types together.
+
+d) Utility package
+A module that groups related constants, types, subtypes and subprograms that
+provide some service.
+
+e) Abstract data type
+Set of values and operations that which specification is indepdent of any
+particular implementation.
+
+f) Type package
+A package used to create abstract data types
+
+g) Aspect
+Defines a property of an entity.
+
+h) Attribute
+An accessor of a property of a particular type e.g Integer'First
+
+i) Precondition
+A predicate that's expected to be true before executing an operation.
+
+j) Postcondition
+A predicate that's expected to be true after executing an operation.
+
+k) Variable package
+A package used to encapsulate a single object (singleton).
+
+l) Elaboration
+Runtime processing of declarations
+
+------------------------------------------------------------------------
+3.3
+Why Text_IO can be viewed as a:
+Utilty package)
+  It provides access to a "text IO" service (creating files, writing to the
+standard output etc)
+
+Type package)
+  The package is platform specific and each implementation-specific
+implmenetation can be viewed as a implementation of a specific abstract package.
+  
+------------------------------------------------------------------------
+3.4
+
+1) 
+Notes:
+$ gnatmake bounded_queue_example_v1.adb 
+compiles everything out of the box. Nice.
+
+2)
+After compiling the application the program compiled and executed without
+warnings.
+
+3) 
+After compiling the application with
+$ gnatmake -gnata bounded_queue_example_v1.adb 
+
+The program exited with:
+raised SYSTEM.ASSERTIONS.ASSERT_FAILURE : failed postcondition from bounded_queue_v2.ads:39
+  
+------------------------------------------------------------------------
+3.5
+The package programmer has complete access to the details of a private type.
+The application programmer has complete access to the details of a private
+generic type.
+
+------------------------------------------------------------------------
+3.8
+
+Because preconditions is a predicate that's expected to be true BEFORE executing
+an operation. It doesn't make much sense to have an old attribute in that
+context.
+
+------------------------------------------------------------------------
+3.9
+
+The domain of sqrt is defined is `Natural`,  hance `Itam` will never be
+negative.
+
+------------------------------------------------------------------------
+3.13
+Elaboration is the runtime processing of declarations. Elaboration occurs:
+* each time we call a subprogram (for procedures and functions)
+* once after the program is loaded for packages
+
+------------------------------------------------------------------------
+3.15
+Public children allow hirearchy and piece-mal extension (a la OOP inheritance).
+Private children do the above but with information hiding.
+
+------------------------------------------------------------------------
+3.16
+
+private with allows the private part of the package to access the private
+members.

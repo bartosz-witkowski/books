@@ -1,0 +1,80 @@
+4.1
+b) is illegal because functions cannot write to global data.
+c) is illegal because the mode of usage of Dates.Compilation_Date is not
+   specified.
+
+------------------------------------------------------------------------
+4.2
+An ineffective computation is one that only burns cpu cycles and doesn't change
+the output of a (sub)program in any way.
+
+------------------------------------------------------------------------
+4.3
+a) Y is in out but is never used
+b) correct
+c) global Timestamp is modified but output dependency not specified
+d) global Count is declared as write-only but Timestamp dependent on it.
+e) correct
+f) correct
+
+------------------------------------------------------------------------
+4.7
+It might be a problem in a way when it overspecifies some dependencies i.e when
+a procedure takes an argument and state but the state is not needed. Otherwise
+it only makes explicit that some named package state is used (the same way we
+make parameters of procedures explicit).
+
+------------------------------------------------------------------------
+4.8
+It means that the implementer provided a method that tries to fill the object
+with sensible data. That reinitialization isn't considered ineffective seems to
+be an (arbitrary) exception for a common case.
+
+------------------------------------------------------------------------
+4.9
+
+Depends => (G =>+ X, X =>+ G)
+it is accurate.
+
+------------------------------------------------------------------------
+4.10
+
+a) 
+Global => (
+  Input => B,
+  In_Out => A
+)
+
+b)
+No it won't be.
+
+------------------------------------------------------------------------
+4.11
+
+Depends => (
+  X =>+ A,
+  B => (A, X)
+)
+
+No it will not, "the dependencies are not checked in the body of the subprogram
+with they apply".
+
+------------------------------------------------------------------------
+4.12
+
+Adds a layer of verification/safety to a public API.
+
+------------------------------------------------------------------------
+4.13
+
+* for functions
+* for subprograms that are (a private) part of a body of another (sub)program
+
+------------------------------------------------------------------------
+4.14
+
+constructive analysis - prespecifying the constraints that some code must
+fulfill BEFORE implementation.
+
+retrospective analysis - writing the constraints after the implementation is
+written (possibly for code that's implemented in another language).

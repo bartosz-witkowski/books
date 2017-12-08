@@ -1,0 +1,338 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{amssymb}
+
+\begin{document}
+
+\section*{5.1}
+\begin{description}
+\item[proposition] - a sentence that has a defined logical (boolean) value
+\item[statement] - see proposition
+\item[propositional connective] - logical operators such as negation, conjunction, disjunction 
+\item[conjunction] - logical and. True iff both statements are true
+\item[disjunction] - logical or. True when at least one of the statements is true.
+\item[exclusive or] - True iff both statements are different
+\item[implication] - $s_1 \implies s_2$. False when $s1 = True$, $s_2 = False$ and true otherwise.
+\item[antecedent] - the first statement in a implication.
+\item[consequent] - the second statement in a implication.
+\item[vacuously true] - a statement that is true because the antecedent was false
+\item[logical equivalence] - if and only if, true when both statements have the same
+\item[logical value] - true or false
+\item[tautology] an expression that's always true
+\end{description}
+
+\section*{5.2}
+
+\begin{tabular}{ c | c | c | c | c}
+x  & y  & $x \implies y$ & $\neg x$ & $\neg x \lor y$ \\
+F  & F  &   T    &   T   &       T      \\
+F  & T  &   T    &   T   &       T      \\
+T  & F  &   F    &   F   &       F      \\
+T  & T  &   T    &   F   &       T      \\
+\end{tabular}
+
+Hence $x \implies y \iff \neg x \lor y$
+
+\section*{5.3}
+
+\begin{tabular}{ c | c | c | c }
+x & y  & $x \lor y$ & $x \land (x \lor y)$ \\
+F & F  &   F    &       F \\
+F & T  &   T    &       F \\
+T & F  &   T    &       T \\
+T & T  &   T    &       T \\
+\end{tabular}
+
+Hence $x \land (x \lor y) \iff x$
+
+\section*{5.4}
+\begin{enumerate}[label=\alph*)]
+\item $ (\neg (true \land false)) \lor true \rightarrow true $
+\item $ (true \land false) \lor true \rightarrow true $
+\item $ true \land (false \lor true) \rightarrow true \land true \rightarrow true $
+\item $ (\neg true) \lor \neg(\neg(false) \land true) \rightarrow false \lor \neg(true \land true) \rightarrow \neg(true) \rightarrow false $
+\item $ false \implies (true \lor false) \rightarrow true $
+\item $ (true \lor false) \implies true \rightarrow true \implies true \rightarrow true $
+\item $ true \implies (\neg (true) \land \neg(false)) \rightarrow true \implies (false \land true) \rightarrow true \implies false \rightarrow false $
+\item $ false \lor (\neg(true) \implies true) \rightarrow false \implies true \rightarrow true $
+\end{enumerate}
+
+\section*{5.5}
+\begin{verbatim}
+A := (if B then C) and (if C then B);
+\end{verbatim}
+
+\section*{5.6}
+
+\begin{enumerate}[label=\alph*)]
+
+\item
+\begin{align*}
+  p \land \neg(p \land q)                &                      \\
+  p \land ((\neg p) \lor (\neg q))       & \quad \text{De Morgan }   \\
+  p \land (\neg p) \lor p \land (\neg q) & \quad \text{Distributive}  \\
+  False \lor p \land (\neg q)            & \quad \text{Complement}    \\
+  p \land (\neg q)                       & \quad \text{Identity} \\
+\end{align*}
+
+\item
+\begin{align*}
+(p \implies q) \land p             & \\
+(\neg p \lor q) \land p            & \quad \text{Conditional as disjunction} \\
+(\neg p \land p) \lor (q \land p)  & \quad \text{Distributive} \\
+false \lor (q \land P)             & \quad \text{Complement} \\
+q \land p                          & \quad \text{Identity} \\
+\end{align*}
+
+\item
+\begin{align*}
+(p \lor q) \land (p \lor \neg q)                          & \\
+((p \lor q) \land p) \lor ((p \lor q) \land \neg q)       & \quad \text{Distributive} \\
+(p \lor q) \lor ((p \lor q) \land \neg q)                 & \quad \text{Absorption} \\
+(p \lor q) \lor ((\neg q \land p) \lor (\neg q \land q))  & \quad \text{Distributive} \\
+(p \lor q) \lor ((\neg q \land p) \lor False)             & \quad \text{Complement} \\
+(p \lor q) \lor (\neg q \land p)                          & \quad \text{Identity} \\
+(p \lor q) \lor (p \land \neg q)                          & \quad \text{Commutative} \\
+p \lor (q \lor (p \land \neg q))                          & \quad \text{Associative} \\
+p \lor ((q \lor p) \land (q \land \neg q))                & \quad \text{Distributive} \\
+p \lor ((q \lor p) \land False)                           & \quad \text{Complement} \\
+p \lor False                                              & \quad \text{Universal bound} \\
+p                                                         & \quad \text{Identity} \\
+\end{align*}
+                         
+\item
+\begin{align*}
+p \lor (q \land \neg p)          & \\
+(p \lor q) \land (p \lor \neg p) & \quad \text{Distributive} \\
+(p \lor q) \land True            & \quad \text{Complement} \\
+(p \lor q)                       & \quad \text{Identity} \\
+\end{align*}
+
+\item
+\begin{align*}
+p \land \neg(p \land \neg q)      & \\
+p \land (\neg p \lor q)           & \quad \text{De Morgan} \\
+(p \land \neg p) \lor (p \land q) & \quad \text{Distributive} \\
+False \lor (p \land q)            & \quad \text{Complement} \\
+p \land q                         & \quad \text{Identity} \\
+\end{align*}
+
+\item
+\begin{align*}
+\neg(p \land q) \land (p \lor \neg q)                                    & \\
+(\neg p \lor \neg q) \land (p \lor \neg q)                               & \quad \text{De Morgan} \\
+((\neg p \lor \neg q) \land p) \lor ((\neg p \lor \neg q) \land \neg q)  & \quad \text{Distributive} \\
+((\neg p \lor \neg q) \land p) \lor \neg q                               & \quad \text{Absorption} \\
+((\neg p \land p) \lor (\neg q \land p)) \lor \neg q                     & \quad \text{Distributive} \\
+(False \lor (\neg q \land p) \lor \neg q                                 & \quad \text{Complement} \\
+(\neg q \land p) \lor \neg q                                             & \quad \text{Identity} \\
+\neg q                                                                   & \quad \text{Absorption} \\
+\end{align*}
+\end{enumerate}
+
+\section*{5.7}
+
+\begin{enumerate}[label=\alph*)]
+\item $ P \land Q $
+\item $ P \land \neg R $
+\item $ \neg (P \land Q) $
+\item $ P \land R $
+\item $ P \implies Q $
+\item $ P \implies Q $
+\item $ Q \implies P $
+\item $ Q \implies P $
+\item $ (P \land Q) \implies R $
+\item $ P \land Q \land R $
+\item $ P \land (Q \implies R) $
+\end{enumerate}
+
+\section*{5.8}
+
+\begin{description}
+\item[argument] - a set of statements (premises) that support the truth of a conclusion 
+  $(p_1 \land p_2 \land \ldots \land p_n) \implies c$
+\item[premise] - see argument
+\item[conclusion] - see argument
+\item[valid argument] - an argument where the implication is a tautology
+\item[sound argument] - an argument that is valid and all of it's premises are true
+\item[inference rule] - basic arguments such as modus ponens
+\end{description}
+
+\section*{5.9}
+
+\begin{enumerate}[label=\alph*)]
+\item
+\[
+(A \implies B) \land (C \lor \neg B) \land A \implies C \quad \text{- The argument to validate}
+\]
+
+\begin{align}
+\label{a:p1}         A \implies B     & \quad \text{Premise}\\
+\label{a:p2}         C \lor \neg B    & \quad \text{Premise}\\
+\label{a:p3}         A                & \quad \text{Premise}\\
+\label{a:negged}     \neg A \lor B    & \quad \text{Conditional as disjunction applied to \ref{a:p1}}\\
+\label{a:nac}        \neg A \lor C    & \quad \text{Resolution applied to \ref{a:negged} and \ref{a:p2}}\\
+                     \therefore C     & \quad \text{Disjunctive syllogism applied to \ref{a:nac} and \ref{a:p3}}
+\end{align}
+
+\item
+\setcounter{equation}{0}
+\[
+A \land (\neg B \implies \neg A) \implies B \quad \text{- The argument to validate}
+\]
+\begin{align}
+\label{b:p1}         A                       & \quad \text{Premise} \\
+\label{b:p2}         \neg B \implies \neg A  & \quad \text{Premise} \\
+\label{b:aimpb}      A \implies B            & \quad \text{Contrapositive applied to \ref{b:p2}}\\
+                     \therefore B            & \quad \text{Modus ponens applied to \ref{b:aimpb} and \ref{b:p1}}
+\end{align}
+
+\item
+\setcounter{equation}{0}
+\[
+\neg (A \lor \neg B) \land (B \implies C) \implies (\neg A \land C) \quad \text{- The argument to validate}
+\]
+
+\begin{align}
+\label{c:p1}    \neg (A \lor \neg B)      & \quad \text{Premise} \\
+\label{c:p2}    B \implies C              & \quad \text{Premise} \\
+\label{c:dem}   \neg A \land B            & \quad \text{De Morgan applied to \ref{c:p1}} \\
+\label{c:mp}    \therefore \neg A \land C & \quad \text{Modus ponens applied to \ref{c:p2} and \ref{c:dem}}
+\end{align}
+
+\item
+\setcounter{equation}{0}
+\[
+\neg A \land (A \lor B) \implies B \quad \text{- The argument to validate}
+\]
+\begin{align}
+\label{d:p1}    \neg A                         & \quad \text{Premise} \\
+\label{d:p2}    (A \lor B)                     & \quad \text{Premise} \\
+                \therefore B                   & \quad \text{Disjunctive syllogism applied to \ref{d:p1} and \ref{d:p2}}
+\end{align}
+
+\item
+\setcounter{equation}{0}
+
+\[ 
+(\neg A \implies \neg B) \land B \land (A \implies C) \implies C \quad \text{ - The argument to validate}
+\]
+\begin{align}
+\label{e:p1}     \neg A \implies \neg B & \quad \text{Premise} \\
+\label{e:p2}     B                      & \quad \text{Premise} \\
+\label{e:p3}     A \implies C           & \quad \text{Premise} \\
+\label{e:cont}   B \implies A           & \quad \text{Contrapositive \ref{e:p1}} \\
+\label{e:hyp}    B \implies C           & \quad \text{Hypothetical syllogism \ref{e:cont} and \ref{e:p3}} \\
+                 \therefore C           & \quad \text{Modus ponens \ref{e:hyp} and \ref{e:p2}}
+\end{align}
+
+\end{enumerate}
+
+\section*{5.10}
+\begin{description}
+\item[$c(x)$] $x$ is a car
+\item[$m(x)$] $x$ is a motorcycle
+\item[$f(x)$] $x$ is fast
+\end{description}
+
+\begin{enumerate}[label=\alph*)]
+\item 
+All cars are fast
+\[ \forall x (c(x) \implies f(x)) \]
+
+\item 
+Some motorcycles are fast
+\[ \exists x(m(x) \land f(x)) \]
+
+\item 
+All cars are fast but no motorcycle is fast
+\[ \forall x(c(x) \implies f(x) \land m(x) \implies \neg f(x)) \]
+
+\item 
+Only motorcycles are fast
+\[ \forall x(f(x) \implies m(x)) \]
+
+\item 
+No car is fast
+\[ \forall x(c(x) \implies \neg f(x)) \]
+
+\item 
+If every car is fast, then every motorcycle is fast
+\[ \forall x(c(x) \implies f(x)) \implies \forall y(m(y) \implies f(y))  ) \]
+
+\item 
+Some motorcycles are not fast
+\[ \exists x(m(x) \land \neg f(x)) \]
+
+\item 
+If no car is fast, then some motorcycles are not fast
+\[ \forall x(c(x) \implies \neg f(x)) \implies \exists y(m(y) \land \neg f(y))\]
+
+\end{enumerate}
+
+\section*{5.11}
+\begin{description}
+\item[$b(x)$] $x$ is a bee
+\item[$f(x)$] $x$ is a flower
+\item[$s(x)$] $x$ stings
+\item[$p(x, y)$] $x$ pollinates $y$
+\end{description}
+
+\begin{enumerate}[label=\alph*)]
+\item 
+All bees sting.
+\[ \forall x (b(x) \implies s(x)) \]
+
+\item 
+Some bees sting.
+\[ \exists x(f(x) \land s(x)) \]
+
+\item 
+Only bees sting.
+\[ \forall x(s(x) \implies b(x)) \]
+
+\item 
+Some bees pollinate all flowers
+\[ \exists x \forall y (p(x, y)) \]
+
+\item 
+All bees pollinate some flowers.
+\[ \forall x \exists y (p(x, y)) \]
+\end{enumerate}
+
+\section*{5.12}
+\begin{description}
+\item[$e(x)$] $x$ is an even integer
+\end{description}
+
+\begin{enumerate}[label=\alph*)]
+\item 
+Some integers are even
+\[ (\exists i \in \mathbb{Z})(e(i)) \]
+
+\item 
+All integers are even.
+\[ (\forall i \in \mathbb{Z})(e(x))) \]
+
+\item 
+Some integers are odd.
+\[ (\exists i \in \mathbb{Z})(\neg e(i)) \]
+
+\item 
+Some integers are both even and odd.
+\[ (\exists i \in \mathbb{Z})(e(i) \land \neg e(x)) \]
+
+Is this even expressible using only the $e(\bullet)$ predicate? It only makes sense when odd is expressible by $\neg e(\bullet)$ but for 0 (an integer both odd and even) $e(0) \land \neg e(0)$ cannot be true (because $e(\bullet)$ cannot be true while $\neg e(\bullet)$ is also true.
+
+\item 
+The sum of an even integer and 12 is an even integer
+\[ (\forall i \in \mathbb{Z})(e(x) \implies e(x + 12) \ni \mathbb{Z}) \]
+
+\item 
+The sum of any two even integers is an even integer.
+\[ (\forall x, y \in \mathbb{Z})(e(x) \land e(y) \implies e(x + y) \ni \mathbb{Z}) \]
+\end{enumerate}
+
+\end{document}

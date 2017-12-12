@@ -1,0 +1,54 @@
+6.1
+Alice is the consumer - she would prefer strong postconditions and weak
+preconditions so she gets more for less
+
+Bob is the producer - likewise he wants more or less but in his case it's strong
+preconditions and weak postconditions
+
+------------------------------------------------------------------------
+6.2
+Functions in spark should not have side effects.
+
+------------------------------------------------------------------------
+6.3
+A cut point is a "point" in the analysis of the program where the programmer
+manually prunes the execution paths the analyzer would make via the
+Assert_And_Cut pragma
+
+------------------------------------------------------------------------
+6.4
+
+Using `example(x: Natural) with Pre => (x mod 2 = 0)` makes the check only
+necessary at the callsite while introducing a new type does it for the entire
+lifetime of the type instance. 
+
+Hence a singluar check would be better served by without introducing a type,
+while for multiple checks would be better served by that very introduction.
+
+The question of dynamic vs static predicate is a practical one, the version of
+SPARK described in the book doesn't support dynamical predicates yet.
+
+------------------------------------------------------------------------
+6.5
+Make the type private and introduce a singular constructor that provides the
+proof of some precondition.
+
+------------------------------------------------------------------------
+6.6
+Given some set Pre of preconditions and set Post of postconditions -
+Contract_Cases would require that only one of the preconditions is true at a
+time, and that it's corresponding post condition would be true after the fact. 
+
+Therefore it should be possible, if cumbersome, to express Contract_Cases by set
+of pre and post contions
+
+------------------------------------------------------------------------
+6.8
+number_of_facts(C1) > number_of_facts(C2)
+#set_that_matches_the_conditions(C1) < #set_that_matches_the_conditions(C2)
+
+
+------------------------------------------------------------------------
+6.17
+Assertions on complicated algorithms may change the complexity class if they
+execute.

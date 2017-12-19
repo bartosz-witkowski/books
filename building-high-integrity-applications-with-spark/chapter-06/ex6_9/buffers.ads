@@ -34,8 +34,8 @@ package Buffers is
 
   function same(xs     : Buffer_Type; 
                 xs_old : Buffer_Type;
-                first  : Integer;
-                last   : Integer) return Boolean 
+                first  : Buffer_Index_Type;
+                last   : Buffer_Index_Type) return Boolean 
    is
       (for all i in first .. last => xs(i) = xs_old(i))
    with 
@@ -44,10 +44,6 @@ package Buffers is
        (xs'first = xs_old'first and then xs'last = xs_old'last)
          and then
        first <= last
-         and then
-       first >= xs'first
-         and then
-        last <= xs'last
      );
 
 

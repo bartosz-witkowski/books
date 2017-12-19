@@ -43,10 +43,17 @@ Therefore it should be possible, if cumbersome, to express Contract_Cases by set
 of pre and post contions
 
 ------------------------------------------------------------------------
+6.7
+Note: this task seems to be impossible to do without the knowledge of ghost
+variables that are needed to correctly write loop invariants.
+------------------------------------------------------------------------
 6.8
 number_of_facts(C1) > number_of_facts(C2)
 #set_that_matches_the_conditions(C1) < #set_that_matches_the_conditions(C2)
 
+------------------------------------------------------------------------
+6.9
+See 6.7
 
 ------------------------------------------------------------------------
 6.17

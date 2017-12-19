@@ -1,0 +1,3 @@
+project ex6_9 is 
+  for source_dirs use (".");
+end ex6_9;

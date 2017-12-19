@@ -5,3 +5,6 @@
 **/*.o
 **/*.ali
 **/*.swp
+**/*.log
+**/*.lst
+**/gnatprove/

@@ -45,7 +45,7 @@ package body Buffers is
     buffer_old : constant Buffer_Type := buffer
       with 
         Ghost => true;
-    --                                      (pivot------------)
+    --                                               (pivot------------)
     last_swap_offset : constant Buffer_Count_Type := (buffer'length / 2) - 1;
   begin
     for i in 0 .. last_swap_offset loop

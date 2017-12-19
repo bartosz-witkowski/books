@@ -17,15 +17,15 @@ package body Buffers is
   end Count_Character;
 
   procedure swap(
-      buffer : in out Buffer_Type;
-      from : in Buffer_Index_Type;
-      to : in Buffer_Index_Type) 
+    buffer : in out Buffer_Type;
+    from : in Buffer_Index_Type;
+    to : in Buffer_Index_Type) 
   is
     tmp   : Character;
   begin
-      tmp          := buffer(from);
-      buffer(from) := buffer(to);
-      buffer(to)   := tmp;
+    tmp          := buffer(from);
+    buffer(from) := buffer(to);
+    buffer(to)   := tmp;
   end swap;
 
   --

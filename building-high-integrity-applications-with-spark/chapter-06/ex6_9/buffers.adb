@@ -62,4 +62,67 @@ package body Buffers is
     end loop;
   end reverse_buffer;
 
+  procedure rotate_right(buffer   : in out Buffer_Type;
+                         distance : in Buffer_Count_Type) 
+  is
+    -- TODO: how to do without copying?
+    tmp_buffer      : Buffer_Type := buffer;
+  begin
+    for i in buffer'range loop
+      tmp_buffer(rotated_index(i, distance)) := buffer(i);
+
+      pragma loop_invariant(
+        rotated_right(tmp_buffer, buffer, distance, buffer'first, i)
+      );
+    end loop;
+    buffer := tmp_buffer;
+  end rotate_right;
+
+  function search(haystack : in Buffer_Type;
+                  needle   : in String) return Buffer_Count_Type 
+  is
+  begin
+    for index in haystack'first .. (haystack'last - needle'length) loop
+      if needle_in(haystack, needle, index) then
+        return index;
+      end if;
+  
+      pragma loop_invariant (
+        (for all i in haystack'first .. index =>
+          not needle_in(haystack, needle, i)));
+    end loop;
+
+    return 0;
+  end search;
+
+  procedure count_and_erase_character(buffer   : in out Buffer_Type;
+                                      ch       : in Character;
+                                      count    : out Buffer_Count_Type)
+  is
+    buffer_old : constant Buffer_Type := buffer
+      with 
+        Ghost => true;
+  begin
+    count := 0;
+
+    for index in buffer'range loop
+      if (buffer(index) = ch) then
+        buffer(index) := ' ';
+        count := count + 1;
+      end if;
+
+      pragma loop_invariant(
+        (for all i in buffer'first .. index =>
+          (if buffer_old(i) = ch then
+            buffer(i) = buffer_old(i)
+          else
+            buffer(i) = ' '))
+          and then
+        count <= index
+          and then
+        count = count_char_from_to(buffer, ch, buffer'first, index)
+      );
+    end loop;
+  end count_and_erase_character;
+
 end Buffers;

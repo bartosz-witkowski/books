@@ -1,23 +1,127 @@
 pragma SPARK_Mode(On);
 
 package Buffers is
-   Maximum_Buffer_Size : constant := 1024;
-   subtype Buffer_Count_Type is Natural  range 0 .. Maximum_Buffer_Size;
-   subtype Buffer_Index_Type is Positive range 1 .. Maximum_Buffer_Size;
-   type    Buffer_Type       is array (Buffer_Index_Type) of Character;
 
-   -- Returns the number of occurrences of Ch in Buffer.
-   function count_character (Buffer : in Buffer_Type;
-                             Ch     : in Character) return Buffer_Count_Type;
+  Maximum_Buffer_Size : constant := 1024;
+  subtype Buffer_Count_Type is Natural  range 0 .. Maximum_Buffer_Size;
+  subtype Buffer_Index_Type is Positive range 1 .. Maximum_Buffer_Size;
+  type    Buffer_Type       is array (Buffer_Index_Type) of Character;
 
+  -- Returns the number of occurrences of Ch in Buffer.
+  function count_character (buffer : in Buffer_Type;
+                            ch     : in Character) return Buffer_Count_Type;
+  
    -- Reverses the content of the Buffer.
-   procedure reverse_buffer(buffer : in out Buffer_Type)
-     with
-       Global  => null,
-       Depends => (buffer => buffer),
-       Post => (
-         swapped(buffer, buffer'old, buffer'first, buffer'last)
-       );
+  procedure reverse_buffer(buffer : in out Buffer_Type)
+    with
+      Global  => null,
+      Depends => (buffer => buffer),
+      Post => (
+        swapped(buffer, buffer'old, buffer'first, buffer'last)
+      );
+
+  procedure rotate_right(buffer   : in out Buffer_Type;
+                         distance : in     Buffer_Count_Type)
+    with
+      Global => null,
+      Depends => (buffer =>+ distance),
+      Post => (
+        rotated_right(buffer, buffer'old, distance, buffer'first, buffer'last)
+      );
+
+  function search(haystack : Buffer_Type;
+                needle   : String) return Buffer_Count_Type
+  with
+    Global => null,
+    Pre => (
+      needle'length > 0
+    ),
+    Post => (
+      if search'result = 0 then
+        (for all index in haystack'first .. (haystack'last - needle'length) =>
+          not needle_in(haystack, needle, index))
+        or needle'length > haystack'length
+      else (
+        search'result + needle'length <= haystack'last
+          and then
+        needle_in(haystack, needle, search'result)
+      )
+    );
+  
+  procedure count_and_erase_character(buffer : in out Buffer_Type;
+                                      ch     : in     Character;
+                                      count  : out    Buffer_Count_Type)
+  with
+    Global => null,
+    Depends => (
+      buffer =>+ ch,
+      count  => (ch, buffer)
+    ),
+    Post => (
+      count = count_char_from_to(buffer, ch, buffer'first, buffer'last)
+        and then
+      (for all i in buffer'range =>
+        (if (buffer'old(i) = ch) then
+          buffer(i) = ' '
+        else
+          buffer(i) = buffer'old(i)))
+    );
+
+  function count_char_from_to(buffer : in Buffer_Type;
+                              ch     : in Character;
+                              from   : in Buffer_Index_Type;
+                              to     : in Buffer_Index_Type) return Buffer_Count_Type
+  is (
+    (if (from = to) then
+      (if buffer(from) = ch then
+        1
+       else
+        0)
+    else 
+      count_char_from_to(buffer, ch, from,     from) +
+      count_char_from_to(buffer, ch, from + 1, to)
+    )
+  )
+  with
+    Global => null,
+    Pre => (
+      from <= to
+    ),
+    Post => (
+      count_char_from_to'result <= (to - from) + 1
+    ),
+    Ghost => true;
+
+  function needle_in(haystack : Buffer_Type;
+                     needle   : String;
+                     index    : Buffer_Index_Type) return Boolean 
+  is (for all i in needle'range =>
+      haystack(index + (i - needle'first)) = needle(i))
+  with
+    Pre => (
+      index <= haystack'last - needle'length
+    );
+  
+  function rotated_index(i        : Buffer_Index_Type; 
+                         distance : Buffer_Count_Type) return Buffer_Index_Type 
+  is (
+    Buffer_Type'first + (
+      (i - Buffer_Type'first + distance) mod Buffer_Type'length)
+  );
+
+  function rotated_right(xs     : Buffer_Type; 
+                         xs_old : Buffer_Type;
+                         n      : Buffer_Count_Type;
+                         from   : Buffer_Index_Type;
+                         to     : Buffer_Index_Type) return Boolean 
+  is (
+    for all i in from .. to => 
+      xs_old(i) = xs(rotated_index(i, n))
+  ) with 
+    Ghost => true,
+    Pre => (
+     from <= to
+    );
 
   function swapped(xs     : Buffer_Type; 
                    xs_old : Buffer_Type;

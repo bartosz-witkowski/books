@@ -55,6 +55,11 @@ number_of_facts(C1) > number_of_facts(C2)
 6.9
 See 6.7
 
+Questions:
+ 1) How to wirte `rotate_right` so that it uses an temporary array without fully
+    initializing that array?
+
+
 ------------------------------------------------------------------------
 6.17
 Assertions on complicated algorithms may change the complexity class if they

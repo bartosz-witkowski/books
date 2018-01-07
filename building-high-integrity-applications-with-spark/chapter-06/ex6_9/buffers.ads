@@ -1,4 +1,4 @@
-pragma SPARK_Mode(On);
+pragma spark_mode(On);
 
 package Buffers is
 
@@ -58,31 +58,61 @@ package Buffers is
       count  => (ch, buffer)
     ),
     Post => (
-      count = count_char_from_to(buffer, ch, buffer'first, buffer'last)
+      count = count_char_from_to(buffer'old, ch, buffer'first, buffer'last)
         and then
-      (for all i in buffer'range =>
-        (if (buffer'old(i) = ch) then
-          buffer(i) = ' '
-        else
-          buffer(i) = buffer'old(i)))
+      replaced_char_from_to(buffer, buffer'old, ch, buffer'first, buffer'last)
     );
+
+  function count_one(buffer : in Buffer_Type;
+                     ch     : in Character;
+                     index  : in Buffer_Index_Type) return Buffer_Count_Type
+  is (
+    if buffer(index) = ch then 1 else 0
+  )
+  with
+    Global => null;
+
+
+  function count_char_from_to_def(buffer : in Buffer_Type;
+                                  ch     : in Character;
+                                  from   : in Buffer_Index_Type;
+                                  to     : in Buffer_Index_Type) return Buffer_Count_Type
+  is (
+    (if (from = to) then
+      count_one(buffer, ch, from)
+    else 
+      count_char_from_to_def(buffer, ch, from,     from) +
+      count_char_from_to_def(buffer, ch, from + 1, to)
+    )
+  )
+  with
+    Global => null,
+    Pre => (
+      from <= to
+    ),
+    Post => (
+      count_char_from_to_def'result <= (to - from) + 1
+    ),
+    Ghost => true;
+  
+  pragma annotate(
+    GNATprove, 
+    Terminating, 
+    count_char_from_to_def);
+  pragma annotate(
+    GNATprove, 
+    False_Positive, 
+    "terminate",
+    "count_char_from_to_def is called recursively on a strictly smaller array");
+
 
   function count_char_from_to(buffer : in Buffer_Type;
                               ch     : in Character;
                               from   : in Buffer_Index_Type;
                               to     : in Buffer_Index_Type) return Buffer_Count_Type
   is (
-    (if (from = to) then
-      (if buffer(from) = ch then
-        1
-       else
-        0)
-    else 
-      count_char_from_to(buffer, ch, from,     from) +
-      count_char_from_to(buffer, ch, from + 1, to)
-    )
-  )
-  with
+    count_char_from_to_def(buffer, ch, from, to)
+  ) with
     Global => null,
     Pre => (
       from <= to
@@ -92,6 +122,25 @@ package Buffers is
     ),
     Ghost => true;
 
+  function replaced_char_from_to(buffer     : in Buffer_Type;
+                                 buffer_old : in Buffer_Type;
+                                 ch         : in Character;
+                                 from       : in Buffer_Index_Type;
+                                 to         : in Buffer_Index_Type) return Boolean
+  is (
+    (for all i in from .. to =>
+      (if buffer_old(i) = ch then
+         buffer(i) = ' '
+       else
+         buffer(i) = buffer_old(i)))
+  )
+  with
+    Global => null,
+    Pre => (
+      from <= to
+    ),
+    Ghost => true;
+  
   function needle_in(haystack : Buffer_Type;
                      needle   : String;
                      index    : Buffer_Index_Type) return Boolean 

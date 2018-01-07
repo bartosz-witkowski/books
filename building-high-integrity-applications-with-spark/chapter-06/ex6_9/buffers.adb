@@ -102,27 +102,34 @@ package body Buffers is
     buffer_old : constant Buffer_Type := buffer
       with 
         Ghost => true;
+    final_count : constant Buffer_Count_Type := count_char_from_to(
+      buffer_old, ch, buffer'first, buffer'last
+    )
+      with
+        Ghost => true;
   begin
     count := 0;
+  
+   for index in buffer'range loop
+     pragma assert (buffer(index) = buffer_old(index));
+   
+     if (buffer(index) = ch) then
+       count := count + count_one(buffer, ch, index);
+       buffer(index) := ' ';
+     end if;
+   
+     pragma loop_invariant(
+       count <= index
+         and then
+       (if (index < buffer'last) then
+         final_count = count + count_char_from_to(buffer_old, ch, index + 1, buffer'last)
+        else
+         final_count = count)
+         and then
+       replaced_char_from_to(buffer, buffer_old, ch, buffer'first, index)
+     );
+   end loop;
 
-    for index in buffer'range loop
-      if (buffer(index) = ch) then
-        buffer(index) := ' ';
-        count := count + 1;
-      end if;
-
-      pragma loop_invariant(
-        (for all i in buffer'first .. index =>
-          (if buffer_old(i) = ch then
-            buffer(i) = buffer_old(i)
-          else
-            buffer(i) = ' '))
-          and then
-        count <= index
-          and then
-        count = count_char_from_to(buffer, ch, buffer'first, index)
-      );
-    end loop;
+   pragma assert (count = final_count);
   end count_and_erase_character;
-
 end Buffers;

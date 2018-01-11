@@ -110,12 +110,15 @@ package body Buffers is
   begin
     count := 0;
   
-   for index in buffer'range loop
-     pragma assert (buffer(index) = buffer_old(index));
+    for index in buffer'range loop
+      pragma assert (buffer(index) = buffer_old(index));
    
-     if (buffer(index) = ch) then
-       count := count + count_one(buffer, ch, index);
-       buffer(index) := ' ';
+      if (buffer(index) = ch) then
+        if (buffer(index) = ch) then
+          count := count + 1;
+        end if;
+
+        buffer(index) := ' ';
      end if;
    
      pragma loop_invariant(
@@ -132,4 +135,113 @@ package body Buffers is
 
    pragma assert (count = final_count);
   end count_and_erase_character;
+
+  procedure compact(buffer          : in out Buffer_Type;
+                    erase_character : in Character;
+                    fill_character  : in Character;
+                    valid           : out Buffer_Count_Type)
+  is
+    buffer_old : constant Buffer_Type := buffer;
+    dest : Integer := Buffer_Index_Type'first;
+
+    final_valid : constant Buffer_Count_Type := count_not_char_from_to(
+      buffer_old, erase_character, buffer'first, buffer'last
+    )
+      with
+        Ghost => true;
+  begin
+    valid := 0;
+
+    pragma assert(dest = buffer_old'first);
+
+    for index in buffer_old'range loop
+      pragma assert(dest <= index);
+
+      if (buffer_old(index) /= erase_character) then
+        buffer(dest) := buffer_old(index);
+        valid        := valid + 1;
+        dest         := dest  + 1;
+      end if;
+
+      -- bounds
+      pragma loop_invariant (
+        dest  >= buffer'first
+          and then
+        dest  <= index + 1
+          and then
+        valid < index + 1
+      );
+
+      -- dest
+      pragma loop_invariant(
+        (if (dest /= buffer'first) then
+          (if dest <= buffer'last then (
+            for all i in buffer'first .. (dest - 1)=>
+              buffer(i) /= erase_character
+           ) else (
+            for all i in buffer'first .. buffer'last =>
+              buffer(i) /= erase_character
+          )))
+      );
+
+      -- valid
+      pragma loop_invariant(
+       valid = dest - buffer'first
+         and then
+       (if (index < buffer'last) then
+         final_valid = valid + count_not_char_from_to(buffer_old, erase_character, index + 1, buffer'last)
+        else
+         final_valid = valid)
+      );
+
+      -- correspond all
+      pragma loop_invariant(
+        dest - 1 <= index
+          and then
+        (if dest > buffer'first then
+          correspond_all_def(buffer_old, buffer'first, index, buffer, dest - 1, erase_character))
+          and then
+        (if index < buffer'last then
+          correspond_all_def(buffer_old, index + 1, buffer'last, buffer, dest, erase_character))
+      );
+    end loop;
+
+    if (dest = buffer'last + 1) then
+      pragma assert(
+        (for all i in buffer'first .. buffer'last =>
+          buffer(i) /= erase_character)
+      );
+      pragma assert(
+        valid = Buffer_Count_Type'last
+      );
+
+      pragma assert(
+        correspond_all(buffer_old, buffer'first, buffer'last, buffer, erase_character)
+      );
+
+      return;
+    end if;
+
+    pragma assert(
+      (for all i in buffer'first .. (dest - 1)=>
+        buffer(i) /= erase_character)
+    );
+
+    pragma assert (
+      dest <= buffer_old'last
+    );
+
+    for index in dest .. buffer_old'last loop
+      buffer(index) := fill_character;
+
+      pragma loop_invariant(
+        (for all i in buffer'first .. dest - 1 =>
+          buffer(i) /= erase_character)
+          and then
+        (for all i in dest .. index =>
+          buffer(i) = fill_character)
+      );
+    end loop;
+
+  end compact;
 end Buffers;

@@ -63,24 +63,126 @@ package Buffers is
       replaced_char_from_to(buffer, buffer'old, ch, buffer'first, buffer'last)
     );
 
-  function count_one(buffer : in Buffer_Type;
-                     ch     : in Character;
-                     index  : in Buffer_Index_Type) return Buffer_Count_Type
+  procedure compact(buffer          : in out Buffer_Type;
+                    erase_character : in Character;
+                    fill_character  : in Character;
+                    valid           : out Buffer_Count_Type)
+  with
+    Global => null,
+    Depends => (
+      buffer =>+ (erase_character, fill_character),
+      valid  =>  (buffer, erase_character)
+    ),
+    Post => (
+      -- all erase_character were replaced
+      -- valid = 0  empty
+      -- valid = 1  buffer'first .. buffer'first 
+      (for all i in buffer'first .. buffer'first + valid - 1 =>
+         buffer(i) /= erase_character)
+       and then
+       -- the left over characters are filled by fill_character
+       (for all i in buffer'first + valid .. buffer'last =>
+         buffer(i) = fill_character
+       )
+       -- valid - use count_char_from_to
+         and then
+       valid = count_not_char_from_to(buffer'old, erase_character, buffer'first, buffer'last)
+       -- -- all the characters from the old buffer correspond to the new one
+        and then
+       correspond_all(buffer'old, buffer'first, buffer'last, buffer, erase_character)
+    );
+      
+function correspond1(old_buffer      : Buffer_Type;
+                    old_position    : Buffer_Index_Type;
+                    new_buffer      : Buffer_Type;
+                    new_position    : Buffer_Index_Type) return Boolean 
   is (
-    if buffer(index) = ch then 1 else 0
+    old_buffer(old_position) = new_buffer(new_position)
+  ) with
+    Global => null,
+    Ghost => true;
+
+--------------------------------------------------------------------
+--               1    2    3    4    5    6
+-- old_buffer = ['#', 'a', '#', 'b', '#', 'c']
+-- new_buffer = ['a', 'b', 'c', '_', '_', '_']
+-- 
+-- correspond_all_def(old_buffer, 1, 6, new_buffer, 1, '#') ->
+--   correspond_all_def(old_buffer, 2, 6, new_buffer, 1, '#') ->
+--     correspond_all_def(old_buffer, 2, 2, new_buffer, 1, '#') ->
+--     correspond_all_def(old_buffer, 3, 6, new_buffer, 2, '#') ->
+--       correspond_all_def(old_buffer, 4, 6, new_buffer, 2, '#') ->
+--         correspond_all_def(old_buffer, 4, 4, new_buffer, 2, '#') 
+--         correspond_all_def(old_buffer, 5, 6, new_buffer, 3, '#') ->
+--           correspond_all_def(old_buffer, 6, 6, new_buffer, 3, '#')
+function correspond_all_def(old_buffer      : Buffer_Type;
+                            old_from        : Buffer_Index_Type;
+                            old_to          : Buffer_Index_Type;
+                            new_buffer      : Buffer_Type;
+                            new_from        : Buffer_Index_Type;
+                            erase_character : Character) return Boolean 
+  is (
+    if (old_buffer(old_from) = erase_character) then (
+      if (old_from = old_to) then (
+        true
+      ) else (
+        correspond_all_def(old_buffer, old_from + 1, old_to, new_buffer, new_from, erase_character)
+      )
+    ) else (
+      if (old_from = old_to) then (
+        correspond1(old_buffer, old_from, new_buffer, new_from)
+      ) else (
+        correspond_all_def(old_buffer, old_from,      old_from, new_buffer, new_from,     erase_character) and then
+        correspond_all_def(old_buffer, old_from + 1,  old_to,   new_buffer, new_from + 1, erase_character)
+      )
+    )
   )
   with
-    Global => null;
+    Global => null,
+    Ghost => true,
+    Pre => (
+      new_from <= old_from
+        and then
+      old_from <= old_to
+    );
 
+  pragma annotate(
+    GNATprove, 
+    Terminating, 
+    correspond_all_def);
+  pragma annotate(
+    GNATprove, 
+    False_Positive, 
+    "terminate",
+    "correspond_all_def is called recursively on a strictly smaller array");
+
+   function correspond_all(old_buffer      : Buffer_Type;
+                           old_from        : Buffer_Index_Type;
+                           old_to          : Buffer_Index_Type;
+                           new_buffer      : Buffer_Type;
+                           erase_character : Character) return Boolean 
+     is (
+       correspond_all_def(old_buffer, old_from, old_to, new_buffer, old_from, erase_character)
+     ) with
+       Global => null,
+       Pre => (
+        old_from <= old_to
+       ),
+       Ghost => true;
+
+
+  --
+  -- functions needed to provide postconditions:
+  -- 
 
   function count_char_from_to_def(buffer : in Buffer_Type;
                                   ch     : in Character;
                                   from   : in Buffer_Index_Type;
                                   to     : in Buffer_Index_Type) return Buffer_Count_Type
   is (
-    (if (from = to) then
-      count_one(buffer, ch, from)
-    else 
+    (if (from = to) then (
+      if buffer(from) = ch then 1 else 0
+    ) else 
       count_char_from_to_def(buffer, ch, from,     from) +
       count_char_from_to_def(buffer, ch, from + 1, to)
     )
@@ -105,7 +207,6 @@ package Buffers is
     "terminate",
     "count_char_from_to_def is called recursively on a strictly smaller array");
 
-
   function count_char_from_to(buffer : in Buffer_Type;
                               ch     : in Character;
                               from   : in Buffer_Index_Type;
@@ -119,6 +220,54 @@ package Buffers is
     ),
     Post => (
       count_char_from_to'result <= (to - from) + 1
+    ),
+    Ghost => true;
+
+  function count_not_char_from_to_def(buffer : in Buffer_Type;
+                                      ch     : in Character;
+                                      from   : in Buffer_Index_Type;
+                                      to     : in Buffer_Index_Type) return Buffer_Count_Type
+  is (
+    (if (from = to) then (
+      if buffer(from) /= ch then 1 else 0
+    ) else 
+      count_not_char_from_to_def(buffer, ch, from,     from) +
+      count_not_char_from_to_def(buffer, ch, from + 1, to)
+    )
+  )
+  with
+    Global => null,
+    Pre => (
+      from <= to
+    ),
+    Post => (
+      count_not_char_from_to_def'result <= (to - from) + 1
+    ),
+    Ghost => true;
+  
+  pragma annotate(
+    GNATprove, 
+    Terminating, 
+    count_not_char_from_to_def);
+  pragma annotate(
+    GNATprove, 
+    False_Positive, 
+    "terminate",
+    "count_not_char_from_to_def is called recursively on a strictly smaller array");
+
+  function count_not_char_from_to(buffer : in Buffer_Type;
+                                  ch     : in Character;
+                                  from   : in Buffer_Index_Type;
+                                  to     : in Buffer_Index_Type) return Buffer_Count_Type
+  is (
+    count_not_char_from_to_def(buffer, ch, from, to)
+  ) with
+    Global => null,
+    Pre => (
+      from <= to
+    ),
+    Post => (
+      count_not_char_from_to'result <= (to - from) + 1
     ),
     Ghost => true;
 

@@ -100,15 +100,6 @@ package body Buffers is
               and then
             same(buffer, buffer'loop_entry, buffer'first, buffer'last)
               and then
-            (if index < buffer'last then
-              (for all i in index + 1 .. buffer'last =>
-                tmp_buffer(rotated_index(i, distance_mod, buffer'first, buffer'last)) =
-                tmp_buffer'loop_entry(rotated_index(i, distance_mod, buffer'first, buffer'last))))
-              and then
-            buffer'first = tmp_buffer'first
-              and then
-            buffer'last = tmp_buffer'last
-              and then
             rotated_right(tmp_buffer, buffer, distance_mod, buffer'first, index)
           );
         end loop;

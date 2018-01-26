@@ -196,13 +196,16 @@ package body Buffers is
 
       -- correspond all
       pragma loop_invariant(
-        dest - 1 <= index
+        (if dest <= buffer'last then
+          same(buffer, buffer'loop_entry, dest, buffer'last))
           and then
-        (if dest > buffer'first then
-          correspond_all_def(buffer_old, buffer'first, index, buffer, dest - 1, erase_character))
+        (if (index < buffer'last) then
+          same(buffer, buffer_old, index + 1, buffer'last))
           and then
-        (if index < buffer'last then
-          correspond_all_def(buffer_old, index + 1, buffer'last, buffer, dest, erase_character))
+        correspond_all(buffer_old, buffer'first, index, buffer, erase_character)
+        --  and then
+        --dest - 1 <= index
+        --  and then
       );
     end loop;
 

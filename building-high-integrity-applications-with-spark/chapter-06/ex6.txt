@@ -58,7 +58,21 @@ See 6.7
 Questions:
  1) How to wirte `rotate_right` so that it uses an temporary array without fully
     initializing that array?
+ We can use an annotation pragma telling gnatprove that incorrect initialization
+is a false positive.
 
+TODO: finish e)
+
+------------------------------------------------------------------------
+6.10
+
+------------------------------------------------------------------------
+6.11
+To prove termination when the looping condition is more complicated then simple
+incrementation or decrementation.
+
+------------------------------------------------------------------------
+6.12
 
 ------------------------------------------------------------------------
 6.17

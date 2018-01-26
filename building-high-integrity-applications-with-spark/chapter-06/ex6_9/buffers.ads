@@ -103,8 +103,9 @@ function correspond1(old_buffer      : Buffer_Type;
     Ghost => true;
 
 --------------------------------------------------------------------
---               1    2    3    4    5    6
+--                1    2    3    4    5    6
 -- old_buffer = ['#', 'a', '#', 'b', '#', 'c']
+--
 -- new_buffer = ['a', 'b', 'c', '_', '_', '_']
 -- 
 -- correspond_all_def(old_buffer, 1, 6, new_buffer, 1, '#') ->

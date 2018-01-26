@@ -92,25 +92,13 @@ package body Buffers is
         for index in buffer'range loop
           tmp_buffer(rotated_index(index, distance_mod, buffer'first, buffer'last)) := buffer(index);
       
-          -- TODO
-          --pragma assume(
-          --  rotated_right(tmp_buffer, buffer, distance_mod, buffer'first, index)
-          --);
-
           pragma loop_invariant(
             (for all i in buffer'range =>
                rotated_index(i, distance_mod, buffer'first, buffer'last) in buffer'range)
               and then
             index in buffer'range
               and then
-            --rotated_right(tmp_buffer, buffer, distance_mod, buffer'first, index)
-            --  and then
             same(buffer, buffer'loop_entry, buffer'first, buffer'last)
-              and then
-            (if index < buffer'last then
-              (for all i in index + 1 .. buffer'last =>
-                tmp_buffer(rotated_index(i, distance_mod, buffer'first, buffer'last)) =
-                    buffer(rotated_index(i, distance_mod, buffer'first, buffer'last))))
               and then
             (if index < buffer'last then
               (for all i in index + 1 .. buffer'last =>
@@ -121,9 +109,7 @@ package body Buffers is
               and then
             buffer'last = tmp_buffer'last
               and then
-            (for all i in buffer'first  .. index =>
-              tmp_buffer(rotated_index(i, distance_mod, buffer'first, buffer'last)) =
-                  buffer(i))
+            rotated_right(tmp_buffer, buffer, distance_mod, buffer'first, index)
           );
         end loop;
         buffer := tmp_buffer;

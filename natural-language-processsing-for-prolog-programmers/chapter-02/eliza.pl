@@ -240,7 +240,7 @@ show(Words) :- show_aux(Words, first).
 show_aux([], _) :- nl.
 show_aux([Word | Words], First) :-
   ( First = first
-  ; ( sentence_separator(Word)
+  ; ( punctuation(Word)
     ; write(' ')
     )
   ),

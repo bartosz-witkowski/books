@@ -1,0 +1,141 @@
+Write a set of simplification and translation rules (in any notation you care to
+use) to hande those sentences. Notice that if you do this intelligently, your
+rules will also handle many sentenecs that you didn't originally think of.
+
+simplification
+['for'] -> []
+['them'] -> []
+['and'] -> []
+['in'] -> []
+['into'] -> []
+['to'] -> []
+['list', 'list'] -> ['list']
+['list', 'all'] -> ['all', 'list']
+['all', 'information'] -> ['information', 'all']
+['list', 'information'] -> ['information', 'list']
+['list', 'files'] --> ['list']
+['list, 'directory] --> ['list']
+['list', 'ending', X] -> ['list', "*" + X]
+['list', 'starting', X] -> ['list', X + "*"]
+['copy', 'recursively] -> ['recursively', 'copy']
+['show'] --> ['list']
+
+translation:
+['information', 'all', 'list' | X] -> ls -al X
+['information', 'list' | X] -> ls -l X
+['all', 'list' | X] -> ls -a X
+['list' |  X] -> ls X
+['copy', X, Y] -> cp -r X Y
+['recursively', 'copy', X, Y] -> cp -r X Y
+
+interpretation)
+
+1)
+['list', 'files', 'in', 'directory', 'X'] ->
+['list', 'files', 'directory', 'X'] ->
+['list', 'directory', 'X'] ->
+['list', 'X'] ->
+ls X
+2) ['show', 'files', 'in', 'directory', 'X'] ->
+['show', 'files', 'directory', 'X'] ->
+['show', 'files', 'directory', 'X'] ->
+['list', 'files', 'directory', 'X'] -> 
+['list', 'directory', 'X'] -> 
+['list', 'X']
+ls X
+3) ['list', 'directory', 'X'] ->
+['list', 'X'] ->
+ls X
+4) ['list', 'X'] ->
+ls X
+5) ['list', 'files'] ->
+['list] ->
+ls
+6) ['list'] ->
+ls
+7) ['show', 'files'] ->
+['list', 'files'] ->
+['list'] ->
+ls
+8) ['show', 'all', 'files', 'in', 'X'] ->
+['show', 'all', 'files', 'X'] ->
+['all', 'list', 'files', 'X'] ->
+['all', 'list', 'X'] ->
+ls -a X
+9) show information for all files in X ->
+show information all files in X ->
+show information all files X ->
+list information all files X ->
+information list all files X ->
+information all list files X ->
+information all list files X ->
+ls -al
+10) list all files in directory X ->
+list all files directory X ->
+all list files directory X ->
+all list directory X ->
+all list X ->
+ls -a X
+11) 
+list all files and show information for them in X ->
+list all files and show information them in X ->
+list all files and show information in X ->
+list all files and show information X ->
+list all files show information X ->
+all list files show information X ->
+all list show information X ->
+all list list information X ->
+all list information X ->
+all information list X ->
+information all list X ->
+ls -al X
+12) 
+list all files and show information in X
+list all files show information in X
+list all files show information X
+list all files show information X
+all list files show information X
+all list show information X
+all list information X
+all information list X
+information all list X
+ls -al X
+13) 
+list files ending in X ->
+list files ending X ->
+list ending X ->
+list *X
+ls *X
+14) 
+list all files ending in X ->
+list all files ending X ->
+all list files ending X ->
+all list ending X ->
+all list *X ->
+ls -a *X
+15) 
+list all and show information for files ending in X ->
+list all and show information files ending in X ->
+list all show information files ending in X ->
+list all show information files ending X ->
+all list show information files ending X ->
+all list list information files ending X ->
+all list information files ending X ->
+all information list files ending X ->
+information all list files ending X ->
+information all list ending X ->
+information all list *X ->
+ls -al *X
+16) list files starting in X
+ls X*
+17) list all files starting in X
+ls -a X*
+18) list all and show information for files staring in X
+ls -al X*
+19) 
+copy recursively X into Y ->
+copy recursively X Y ->
+recursively copy X Y
+cp -r X Y
+20) copy recursively X to Y
+cp -r X Y

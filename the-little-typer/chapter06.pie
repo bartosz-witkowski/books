@@ -1,0 +1,26 @@
+#lang pie
+; first rest
+
+(claim first
+  (Pi ((A U)
+       (len-1 Nat))
+    (-> (Vec A (add1 len-1))
+        A)))
+(define first
+  (lambda (A len-1)
+    (lambda (vect)
+      (head vect))))
+
+(claim rest
+  (Pi ((A U)
+       (len-1 Nat))
+    (-> (Vec A (add1 len-1))
+        (Vec A len-1))))
+(define rest
+  (lambda (A len-1)
+     (lambda (vect)
+        (tail vect))))
+     
+
+(first Atom 0 (vec:: 'head vecnil))
+(rest Atom 0 (vec:: 'head vecnil))

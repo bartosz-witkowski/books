@@ -1,0 +1,85 @@
+#lang pie
+; 
+; (rec-Nat target base step) => X
+;  target : Nat
+;  base : X
+;  step : (-> Nat X X))
+;
+; rec-Nat is primitive recursion on Nat. 
+;
+;   If target is zero, then the whole expression is base. 
+;   If target is (add1 n), then the whole expression is 
+;      (step n (rec-Nat n base step))
+
+(claim step-+ (-> Nat Nat
+                  Nat))
+(define step-+
+  (lambda (n-1 almost-answer)
+    (add1 almost-answer)))
+
+(claim + (-> Nat Nat 
+  Nat))
+(define +
+  (lambda (n m)
+    (rec-Nat
+      n
+      m
+      step-+)))
+
+(claim make-step-* (-> Nat
+                       (-> Nat Nat 
+                           Nat)))
+(define make-step-*
+  (lambda (m)
+    (lambda (n-1 almost-answer)
+      (+ m almost-answer))))
+    
+
+(claim * (-> Nat Nat Nat))
+(define *
+  (lambda (n m)
+     (rec-Nat
+       n
+       0
+       (make-step-* m))))
+
+(claim zerop (-> Nat 
+                 Atom))
+(define zerop 
+  (lambda (n)
+     (rec-Nat
+        n
+        't
+        (lambda (n-1 almost-answer)
+           'nil))))
+
+
+
+; (gauss n) = 0 + 1 + 2 + ... + n
+(claim step-gauss (-> Nat Nat
+                      Nat))
+(define step-gauss
+  (lambda (n-1 almost-answer)
+     (+ n-1 almost-answer)))
+
+(claim gauss (-> Nat 
+                 Nat))
+(define gauss
+  (lambda (n)
+    (rec-Nat
+       n
+       n
+       step-gauss)))
+
+(+ 2 3)
+(* 3 4)
+(* 1 5)
+(* 5 1)
+(* 5 0)
+(* 0 5)
+(zerop 1)
+(zerop 0)
+(gauss 1)
+(gauss 2)
+(gauss 3)
+(gauss 5)

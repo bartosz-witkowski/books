@@ -1,0 +1,230 @@
+#lang pie
+
+(claim step-+ (-> Nat Nat
+                  Nat))
+(define step-+
+  (lambda (n-1 almost-answer)
+    (add1 almost-answer)))
+
+(claim + (-> Nat Nat 
+  Nat))
+(define +
+  (lambda (n m)
+    (rec-Nat
+      n
+      m
+      step-+)))
+
+(claim step-length
+  (Pi ((A U))
+    (-> A (List A) Nat 
+        Nat)))
+(define step-length
+  (lambda (A)
+    (lambda  (a as almost-answer)
+      (add1 almost-answer))))
+
+(claim length
+  (Pi ((A U))
+    (-> (List A) Nat)))
+(define length
+  (lambda (A)
+    (lambda (xs)
+      (rec-List 
+        xs
+        0
+        (step-length A)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim list->vec/motive
+  (Pi ((A U))
+    (-> (List A)
+        U)))
+(define list->vec/motive
+  (lambda (A)
+    (lambda (list)
+      (Vec A (length A list)))))
+
+
+(claim list->vec/step
+  (Pi ((A U)
+       (elem A)
+       (list (List A)))
+    (-> (Vec A (length A list))
+        (Vec A (add1 (length A list))))))
+(define list->vec/step
+  (lambda (A)
+    (lambda (elem rest vec_prev)
+      (vec:: elem vec_prev))))
+
+
+(claim list->vec
+  (Pi ((A U)
+       (list (List A)))
+    (Vec A (length A list))))
+(define list->vec
+  (lambda (A list)
+    (ind-List
+      list
+      (list->vec/motive A)
+      vecnil
+      (list->vec/step A))))
+      
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim vec-append/motive
+  (Pi ((A U)
+       (other-vec-len Nat)
+       (len Nat))
+    (-> (Vec A len)
+        U)))
+(define vec-append/motive
+  (lambda (A other-vec-len len)
+    (lambda (vec)
+      (Vec A (+ len other-vec-len)))))
+
+(claim vec-append/step
+  (Pi ((A U)
+       (other-vec-len Nat)
+       (len Nat)
+       (first A)
+       (rest (Vec A len)))
+    (-> (Vec A (+ len other-vec-len))
+        (Vec A (add1 (+ len other-vec-len))))))
+(define vec-append/step
+  (lambda (A other-len)
+    (lambda (len first rest)
+      (lambda (almost-answer)
+        (vec:: first almost-answer)))))
+
+(claim vec-append
+  (Pi ((A U)
+       (l1 Nat)
+       (l2 Nat))
+    (->
+	(Vec A l1)
+	(Vec A l2)
+	(Vec A (+ l1 l2)))))
+(define vec-append
+  (lambda (A l1 l2)
+    (lambda (xs ys)
+      (ind-Vec 
+	 l1
+         xs
+	 (vec-append/motive A l2)
+         ys
+         (vec-append/step A l2)))))
+         
+(claim v1 
+  (Vec Atom 2))
+(define v1
+  (vec:: 'a (vec:: 'b vecnil)))
+
+(claim v2 
+  (Vec Atom 3))
+(define v2
+  (vec:: 'one (vec:: 'two (vec:: 'three vecnil))))
+
+(vec-append Atom 2 3 v1 v2)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim vec->list/motive
+  (Pi ((A U)
+       (len Nat))
+    (-> (Vec A len)
+        U)))
+(define vec->list/motive
+  (lambda (A len)
+    (lambda (xs)
+      (List A))))
+
+(claim vec->list/step
+  (Pi ((A U)
+       (len Nat)
+       (first A)
+       (rest (Vec A len)))
+    (-> (List A)
+        (List A))))
+(define vec->list/step
+  (lambda (A len)
+    (lambda (first rest)
+      (lambda (almost-answer)
+        (:: first almost-answer)))))
+
+(claim vec->list
+  (Pi ((A U)
+       (len Nat))
+    (-> (Vec A len)
+        (List A))))
+(define vec->list
+  (lambda (A len)
+     (lambda (xs)
+       (ind-Vec
+         len
+         xs
+         (vec->list/motive A)
+         nil
+         (vec->list/step A)))))
+
+(vec->list Atom 3 v2)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(claim list->vec->list_roundtrips/motive
+  (Pi ((A U))
+    (-> (List A)
+        U)))
+(define list->vec->list_roundtrips/motive
+  (lambda (A)
+    (lambda (list)
+      (= (List A)
+         list
+         (vec->list A (length A list) (list->vec A list))))))
+
+(claim listcons 
+  (Pi ((A U))
+    (-> A (List A) 
+	(List A))))
+(define listcons
+  (lambda (A)
+    (lambda (elem list)
+      (:: elem list))))
+
+(claim list->vec->list_roundtrips/step
+  (Pi ((A U)
+       (first A)
+       (rest (List A)))
+    (-> (list->vec->list_roundtrips/motive A rest)
+        (list->vec->list_roundtrips/motive A (:: first rest)))))
+(define list->vec->list_roundtrips/step
+  (lambda (A)
+    (lambda (first rest)
+      (lambda (rest->vec_rest->rest_roundtrips)
+         (cong rest->vec_rest->rest_roundtrips (listcons A first))))))
+
+(claim list->vec->list_roundtrips
+  (Pi ((A U)
+       (list (List A)))
+   (= (List A)
+      list
+      (vec->list A (length A list) (list->vec A list)))))
+(define list->vec->list_roundtrips
+  (lambda (A)
+    (lambda (list)
+      (ind-List 
+        list
+        (list->vec->list_roundtrips/motive A)
+        (same nil)
+        (list->vec->list_roundtrips/step A)))))
+        
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    
+
+
+
+

@@ -1,0 +1,271 @@
+#lang pie
+
+(claim Maybe 
+  (-> U U))
+(define Maybe
+  (lambda (Type)
+    (Either Type Trivial)))
+
+(claim nothing
+  (Pi ((A U))
+    (Maybe A)))
+(define nothing
+  (lambda (A)
+    (right sole)))
+
+(claim just
+  (Pi ((A U))
+    (-> A
+        (Maybe A))))
+(define just
+  (lambda (A)
+    (lambda (elem)
+      (left elem))))
+
+(claim maybe.map
+  (Pi ((A U)
+       (B U))
+    (-> (-> A B)
+        (Maybe A)
+        (Maybe B))))
+(define maybe.map
+  (lambda (A B)
+    (lambda (a->b either)
+      (ind-Either
+        either
+        (lambda (either)
+          (Maybe B))
+        (lambda (a)
+          (just B (a->b a)))
+        (lambda (unit)
+           (nothing B))))))
+
+(claim maybe.flat-map
+  (Pi ((A U)
+       (B U))
+    (-> (-> A 
+           (Maybe B))
+        (Maybe A)
+        (Maybe B))))
+(define maybe.flat-map
+  (lambda (A B)
+    (lambda (a->maybe_b either)
+      (ind-Either
+        either
+        (lambda (either)
+          (Maybe B))
+        (lambda (a)
+          (a->maybe_b a))
+        (lambda (unit)
+           (nothing B))))))
+
+(claim list.maybe-head
+  (Pi ((A U))
+    (-> (List A)
+        (Maybe A))))
+(define list.maybe-head
+  (lambda (A)
+    (lambda (list)
+      (rec-List
+        list
+        (nothing A)
+        (lambda (a as almost-answer)
+           (just A a))))))
+
+(claim list.maybe-tail
+  (Pi ((A U))
+    (-> (List A)
+        (Maybe (List A)))))
+(define list.maybe-tail
+  (lambda (A)
+    (lambda (list)
+      (rec-List
+        list
+        (nothing (List A))
+        (lambda (a as almost-answer)
+           (just (List A) as))))))
+
+
+(claim test-list
+  (List Atom))
+(define test-list
+  (:: 'foo (:: 'bar (:: 'baz nil))))
+
+(list.maybe-head Atom nil)
+(list.maybe-head Atom test-list)
+(list.maybe-tail Atom nil)
+(list.maybe-tail Atom test-list)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim list.ith/step
+  (Pi ((A U))
+    (-> Nat 
+	(-> (List A)
+	    (Maybe A))
+	(-> (List A)
+	    (Maybe A)))))
+(define list.ith/step
+  (lambda (A)
+    (lambda (n list.ith-1)
+      (lambda (list)
+        (maybe.flat-map 
+           (List A)
+           A
+           (lambda (rest)
+             (list.ith-1 rest))
+           (list.maybe-tail A list))))))
+
+(claim list.ith
+  (Pi ((A U))
+    (-> Nat
+      (List A)
+      (Maybe A))))
+(define list.ith
+  (lambda (A)
+    (lambda (index)
+      (rec-Nat
+        index
+        (list.maybe-head A)
+        (list.ith/step A)))))
+
+(list.ith Atom 0 nil)
+(list.ith Atom 1 nil)
+(list.ith Atom 2 nil)
+(list.ith Atom 3 nil)
+(list.ith Atom 0 test-list)
+(list.ith Atom 1 test-list)
+(list.ith Atom 2 test-list)
+(list.ith Atom 3 test-list)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim test-vector 
+  (Vec Atom 3))
+(define test-vector
+  (vec:: 'foo
+    (vec:: 'bar
+      (vec:: 'baz vecnil))))
+
+(claim Fin/step
+  (-> U U))
+(define Fin/step
+  (lambda (Type)
+    (Maybe Type)))
+
+(claim Fin
+  (-> Nat U))
+(define Fin
+  (lambda (n)
+    (iter-Nat
+      n
+      Absurd1
+      Fin/step)))
+
+(claim fzero
+  (Pi ((n Nat))
+    (Fin (add1 n))))
+(define fzero
+  (lambda (n)
+    (nothing (Fin n))))
+
+(claim fadd1
+  (Pi ((n Nat))
+    (-> (Fin n)
+        (Fin (add1 n)))))
+(define fadd1
+  (lambda (n)
+    (lambda (fin-1)
+      (just (Fin n) fin-1))))
+
+(claim which-fin
+  (Pi ((n Nat)
+       (A U))
+    (-> (Fin (add1 n))    ; target
+        A                 ; base
+        (-> (Fin n) A)    ; step
+        A))) 
+(define which-fin
+  (lambda (nat A)
+    (lambda (fin base step)
+      (ind-Either
+        fin
+        (lambda (either)
+          A)
+        (lambda (l)
+          (step l))
+        (lambda (whatever)
+          base)))))
+        
+        
+
+(claim vec.ith/motive
+  (Pi ((A U))
+    (-> Nat U)))
+(define vec.ith/motive
+  (lambda (A)
+    (lambda (len)
+      (-> (Fin len) 
+	  (Vec A len)
+	  A))))
+
+(claim vec.ith/base
+  (Pi ((A U))
+    (-> (Fin 0)
+	(Vec A 0)
+	A)))
+(define vec.ith/base
+  (lambda (A)
+    (lambda (absurd-fin vec)
+      (ind-Absurd 
+	absurd-fin
+	A))))
+
+(claim vec.ith/step
+  (Pi ((A U)
+       (len Nat))
+    (-> (-> (Fin len)
+	    (Vec A len)
+	    A)
+	(-> (Fin (add1 len))
+	    (Vec A (add1 len))
+	    A))))
+(define vec.ith/step
+  (lambda (A)
+    (lambda (len)
+      (lambda (fin-1->vec->a)
+	(lambda (fin)
+          (lambda (vec)
+            (which-fin
+              len
+              A
+              fin
+              (head vec)
+              (lambda (fin-1)
+                (fin-1->vec->a fin-1 (tail vec))))))))))	  
+
+(claim vec.ith
+  (Pi ((A U)
+       (len Nat))
+    (-> (Fin len)
+	(Vec A len)
+	A)))
+(define vec.ith
+  (lambda (A len)
+    (ind-Nat 
+      len
+      (vec.ith/motive A)
+      (vec.ith/base A)
+      (vec.ith/step A))))
+    
+
+(vec.ith Atom 3 (fzero 2) test-vector)
+(vec.ith Atom 3 (fadd1 2 (fzero 1)) test-vector)
+(vec.ith Atom 3 (fadd1 2 (fadd1 1 (fzero 0))) test-vector)
+
+;(vec.ith Atom 3 (fadd1 (fadd1 (fzero 2))) test-vector)
+;(vec.ith Atom 3 (fadd1 (fadd1 (fadd1 (fzero 2)))) test-vector)
+
+;(vec.ith Atom 3 1 test-list)
+;(vec.ith Atom 3 2 test-list)
+;(vec.ith Atom 3 3 test-list)

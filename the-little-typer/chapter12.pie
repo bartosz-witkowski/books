@@ -1,0 +1,108 @@
+#lang pie
+
+(claim step-+ (-> Nat Nat
+                  Nat))
+(define step-+
+  (lambda (n-1 almost-answer)
+    (add1 almost-answer)))
+
+(claim + (-> Nat Nat 
+  Nat))
+(define +
+  (lambda (n m)
+    (rec-Nat
+      n
+      m
+      step-+)))
+
+(claim double (-> Nat Nat))
+(define double
+  (lambda (n)
+    (iter-Nat
+      n
+      0
+      (+ 2))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim Even
+  (-> Nat U))
+(define Even
+  (lambda (nat)
+    (Sigma ((half Nat))
+      (= Nat nat (double half)))))
+
+(Even 10)
+
+(claim zero-is-even
+  (Even 0))
+(define zero-is-even
+  (cons 0 (same 0)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim even+2-is-even
+  (Pi ((nat Nat))
+    (-> (Even nat)
+        (Even (+ 2 nat)))))
+
+(define even+2-is-even
+  (lambda (nat)
+    (lambda (half:double-half-equals-nat)
+      (cons
+        (add1 (car half:double-half-equals-nat))
+        (cong
+          (cdr half:double-half-equals-nat)
+          (+ 2))))))
+
+(claim two-is-even
+  (Even 2))
+(define two-is-even
+  (even+2-is-even 0 zero-is-even))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim Odd
+  (-> Nat U))
+(define Odd
+  (lambda (nat)
+    (Sigma ((almost-half Nat))
+      (= Nat nat (add1 (double almost-half))))))
+
+(claim one-is-odd
+  (Odd 1))
+(define one-is-odd
+  (cons 0 (same 1)))
+
+(claim thirteen-is-odd
+  (Odd 13))
+(define thirteen-is-odd
+  (cons 6 (same 13)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim if-n-is-even-add1-n-is-odd
+  (Pi ((n Nat))
+    (-> (Even n)
+        (Odd (add1 n)))))
+(define if-n-is-even-add1-n-is-odd
+  (lambda (n)
+    (lambda (half:double-half-equals-nat)
+      (cons
+        (car half:double-half-equals-nat)
+        (cong 
+          (cdr half:double-half-equals-nat)
+          (+ 1))))))
+    
+(claim if-n-is-odd-add1-n-is-even
+  (Pi ((n Nat))
+    (-> (Odd n)
+        (Even (add1 n)))))
+(define if-n-is-odd-add1-n-is-even
+  (lambda (n)
+    (lambda (almost-half:add1_double-almost-half-equals-nat)
+      (cons
+        (add1 (car almost-half:add1_double-almost-half-equals-nat))
+        (cong 
+          (cdr almost-half:add1_double-almost-half-equals-nat)
+          (+ 1))))))

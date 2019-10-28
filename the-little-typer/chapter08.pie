@@ -1,0 +1,80 @@
+#lang pie
+
+(claim step-+ (-> Nat Nat
+                  Nat))
+(define step-+
+  (lambda (n-1 almost-answer)
+    (add1 almost-answer)))
+
+(claim + (-> Nat Nat 
+  Nat))
+(define +
+  (lambda (n m)
+    (rec-Nat
+      n
+      m
+      step-+)))
+
+(claim incr
+  (-> Nat
+      Nat))
+(define incr
+  (lambda (n)
+    (iter-Nat 
+      n
+      1
+      (+ 1))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim +1=add1
+  (Pi ((n Nat))
+    (= Nat (+ 1 n) (add1 n))))
+(define +1=add1
+  (lambda (n)
+    (same (add1 n))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim base-incr=add1
+  (= Nat (incr 0) (add1 0)))
+(define base-incr=add1
+  (same (add1 0)))
+
+(claim motive-incr=add1
+  (-> Nat U))
+(define motive-incr=add1
+  (lambda (n)
+    (= Nat (incr n) (add1 n))))
+     
+(claim step-incr=add1-replace-motive
+  (-> Nat U))
+(define step-incr=add1-replace-motive
+  (lambda (nat)
+
+(= Nat (incr n) (add1 n))
+    
+
+(claim step-incr=add1
+  (Pi ((n Nat))
+     (-> (= Nat (incr n) (add1 n))
+         (= Nat (add1 (incr n)) (add1 (add1 n))))))
+(define step-incr=add1
+  (lambda (n) 
+    (lambda (incr_n_=_add1_n)
+      (replace
+         incr_n_=add1_n
+         (lambda (nat)
+            (= 
+         ;
+         (lambda 
+
+(claim incr=add1
+  (Pi ((n Nat))
+    (= Nat (incr n) (add1 n))))
+(define incr=add1
+  (lambda (n)
+    (ind-Nat
+      n
+      motive-incr=add1
+      base-incr=add1
+      step-incr=add1)))

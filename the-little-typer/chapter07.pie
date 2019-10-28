@@ -1,0 +1,262 @@
+#lang pie
+; first rest
+
+(claim motive-peas
+  (-> Nat U))
+(define motive-peas
+  (lambda (n_peas)
+    (Vec Atom n_peas)))
+    
+(claim step-peas
+  (Pi ((n_peas-1 Nat))
+    (-> (motive-peas n_peas-1)
+        (motive-peas (add1 n_peas-1)))))
+(define step-peas
+  (lambda (n_peas-1 almost-answer)
+    (vec:: 'pea almost-answer)))
+
+(claim peas
+  (Pi ((n_peas Nat))
+    (Vec Atom n_peas)))
+
+(claim base-peas (motive-peas 0))
+(define base-peas vecnil)
+
+(define peas
+  (lambda (n_peas)
+    (ind-Nat
+       n_peas
+       motive-peas
+       base-peas
+       step-peas)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim make-rec-Nat*-motive
+  (Pi ((X U))
+    (-> Nat U)))
+(define make-rec-Nat*-motive
+  (lambda (X)
+    (lambda (nat)
+      X)))
+
+(claim rec-Nat*
+  (Pi ((X U))
+    (-> Nat
+        X
+        (-> Nat X
+            X)
+        X)))
+(define rec-Nat*
+  (lambda (X)
+    (lambda (target base step)
+      (ind-Nat
+         target
+         (make-rec-Nat*-motive X)
+         base
+         step))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim make-base-last
+  (Pi ((A U))
+    (-> (Vec A (add1 zero))
+       A)))
+(define make-base-last
+  (lambda (A)
+     (lambda (as)
+       (head as))))
+
+; base case is 
+; (-> (Vec A (add1 zero))
+;      A)
+
+; (motive zero) =>
+; (-> (Vec A (add1 zero))
+;      A)
+; (motive n) =>
+; (-> (Vec A (add1 n))
+;     A)
+
+(claim make-motive-last
+  (Pi ((A U))
+    (-> Nat
+        U)))
+(define make-motive-last
+  (lambda (A)
+    (lambda (n)
+      (-> (Vec A (add1 n))
+           A))))
+
+(claim make-step-last
+  (Pi ((A U)
+       (n Nat))
+    (-> (make-motive-last A n)
+        (make-motive-last A (add1 n)))))
+;   (-> 
+;       (-> (Vec A (add1 n))
+;            A)
+;       (-> (Vec A (add1 (add1 n)))
+;            A))
+(define make-step-last
+  (lambda (A n)
+    (lambda (vec_A_add1_n->A)
+      (lambda (xs)
+        (vec_A_add1_n->A (tail xs))))))
+    
+(claim last
+  (Pi ((A U)
+       (len-1 Nat))
+    (-> (Vec A (add1 len-1))
+        A)))
+(define last
+  (lambda (A len-1)
+    (ind-Nat
+      len-1
+      (make-motive-last A)
+      (make-base-last A)
+      (make-step-last A))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(claim make-base-drop-last
+  (Pi ((A U))
+    (-> (Vec A (add1 zero))
+        (Vec A zero))))
+(define make-base-drop-last
+  (lambda (A)
+    (lambda (xs)
+      vecnil)))
+
+(claim make-motive-drop-last
+  (Pi ((A U))
+    (-> Nat
+        U)))
+(define make-motive-drop-last
+  (lambda (A)
+    (lambda (n)
+      (-> (Vec A (add1 n))
+          (Vec A n)))))
+
+(claim make-step-drop-last
+  (Pi ((A U)
+       (n Nat))
+  (-> (make-motive-drop-last A n)
+      (make-motive-drop-last A (add1 n)))))
+; (-> (-> (Vec A (add1 n)
+;         (Vec A n))
+;     (-> (Vec A (add1 (add1 n))
+;         (Vec A (add1 n))))))
+(define make-step-drop-last
+  (lambda (A n)
+    (lambda (vec_A_add1_n->vec_A_n)
+      (lambda (xs)
+        (vec:: (head xs) (vec_A_add1_n->vec_A_n (tail xs)))))))
+
+(claim drop-last
+  (Pi ((A U)
+       (len-1 Nat))
+    (-> (Vec A (add1 len-1))
+        (Vec A len-1))))
+(define drop-last
+  (lambda (A len-1)
+    (ind-Nat
+      len-1
+      (make-motive-drop-last A)
+      (make-base-drop-last A)
+      (make-step-drop-last A))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim make-base-map
+  (Pi ((A U)
+       (B U))
+    (-> (Vec A zero)
+        (Vec B zero))))
+(define make-base-map
+  (lambda (A B)vec-of-nats
+    (lambda (xs)
+      vecnil)))vec-of-nats
+
+(claim make-motive-map
+  (Pi ((A U)
+       (B U))
+    (-> Nat
+        U)))
+(define make-motive-map
+  (lambda (A B)
+    (lambda (n)
+      (-> (Vec A n)
+          (Vec B n)))))
+
+(claim make-step-map
+  (Pi ((A U)
+       (B U)vec-of-nats
+       (a->b (-> A B))
+       (n Nat))
+    (-> (make-motive-map A B n)
+        (make-motive-map A B (add1 n)))))
+; (-> (-> (Vec A n)
+;         (Vec B n))
+;     (-> (Vec A (add1 n))vec-of-natsvec-of-nats
+;         (Vec B (add1 n))))
+(define make-step-map
+  (lambda (A B a->b n)
+    (lambda (vec_A_n->vec_B_n)
+      (lambda (as)
+        (vec:: (a->b (head as)) (vec_A_n->vec_B_n (tail as)))))))
+
+(claim mapvec-of-nats
+  (Pi ((A U)
+       (B U)
+       (len Nat))
+    (-> (-> A B)
+        (Vec A len)
+        (Vec B len))))
+(define map
+  (lambda (A B len)
+    (lambda (a->b)
+      (ind-Nat
+        len
+        (make-motive-map A B)vec-of-nats
+        (make-base-map A B)vec-of-nats
+        (make-step-map A B a->b)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; test
+
+(claim step-+ (-> Nat Nat
+                  Nat))
+(define step-+
+  (lambda (n-1 almost-answer)
+    (add1 almost-answer)))
+
+(claim + (-> Nat Nat 
+  Nat))
+(define +
+  (lambda (n m)vec-of-nats
+    (rec-Nat*
+      Nat
+      n
+      m
+      step-+)))
+
+(peas 5)
+(+ 2 3)
+vec-of-nats
+(claim vec1 (Vec Atom 1))
+(define vec1
+  (vec:: 'last vecnil))vec-of-nats
+
+(claim vec2 (Vec Atom 2))
+(define vec2
+  (vec:: 'first vec1))
+
+(claim vec-of-nats (Vec Nat 4))
+(define vec-of-nats
+  (vec:: 0 (vec:: 1 (vec:: 2 (vec:: 3 vecnil)))))
+
+(last Atom 0 vec1)
+(last Atom 1 vec2)
+(drop-last Atom 0 vec1)
+(drop-last Atom 1 vec2)
+(map Nat Nat 4 (+ 1) vec-of-nats)

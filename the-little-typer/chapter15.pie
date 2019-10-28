@@ -1,0 +1,185 @@
+#lang pie
+
+(claim =consequence
+  (-> Nat 
+      Nat 
+      U))
+(define =consequence
+  (lambda (n1 n2)
+    (which-Nat 
+      n1
+      (which-Nat
+        n2
+        Trivial
+        (lambda (n2-1)
+           Absurd))
+      (lambda (n1-1)
+        (which-Nat
+          n2
+          Absurd
+          (lambda (n2-1)
+            (= Nat n1-1 n2-1)))))))
+
+(claim =consequence-same/step
+  (Pi ((n Nat))
+    (-> (=consequence n n)
+        (=consequence (add1 n) (add1 n)))))
+(define =consequence-same/step
+  (lambda (n)
+    (lambda (consequence-1)
+      (same n))))
+      
+
+(claim =consequence-same
+  (Pi ((n Nat))
+    (=consequence n n)))
+(define =consequence-same
+  (lambda (n)
+    (ind-Nat
+      n
+      (lambda (x)
+        (=consequence x x))
+      sole
+      =consequence-same/step)))
+
+(claim use-Nat= 
+  (Pi ((n1 Nat)
+       (n2 Nat))
+    (-> (= Nat n1 n2)
+        (=consequence n1 n2))))
+(define use-Nat=
+  (lambda (n1 n2)
+    (lambda (n1=n2)
+      (replace 
+        n1=n2
+        (lambda (x)
+          (=consequence n1 x))
+        (=consequence-same n1)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim zero-not-add1
+  (Pi ((n Nat))
+    (-> (= Nat zero (add1 n))
+        Absurd)))
+(define zero-not-add1
+  (lambda (n)
+     (use-Nat= zero (add1 n))))
+
+(claim donut-absurdity
+  (-> (= Nat 0 6)
+      (= Atom 'powdered 'glazed)))
+(define donut-absurdity
+  (lambda (zero=six)
+    (ind-Absurd
+      (zero-not-add1 5 zero=six)
+      (= Atom 'powdered 'glazed))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim sub1=
+  (Pi ((n1 Nat)
+       (n2 Nat))
+    (-> (= Nat (add1 n1) (add1 n2))
+        (= Nat n1 n2))))
+(define sub1=
+  (lambda (n1 n2)
+    (use-Nat= (add1 n1) (add1 n2))))
+
+(claim one=/=six
+  (-> (= Nat 1 6)
+      Absurd))
+(define one=/=six
+  (lambda (one=six)
+    (zero-not-add1 4
+      (sub1= 0 5 one=six))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim vec.head/motive
+  (Pi ((A U)
+       (len Nat))
+    (-> (Vec A len)
+        U)))
+(define vec.head/motive
+  (lambda (A len)
+    (lambda (vec)
+      (Pi ((n Nat))
+        (-> (= Nat len (add1 n))
+            A)))))
+
+(claim vec.head/step
+  (Pi ((A U)
+       (len Nat)
+       (h A)
+       (t (Vec A len)))
+   (-> (vec.head/motive A len t)
+       (vec.head/motive A (add1 len) (vec:: h t)))))
+(define vec.head/step
+  (lambda (A len)
+    (lambda (h t vec)
+       (lambda (whatever_n whatever_eq)
+          h))))
+
+(claim vec.head
+  (Pi ((A U)
+       (len-1 Nat))
+    (-> (Vec A (add1 len-1))
+        A)))
+(define vec.head
+  (lambda (A len-1)
+    (lambda (vec)
+      (
+        (ind-Vec
+          (add1 len-1)
+          vec
+          (vec.head/motive A)
+          (lambda (n eq)
+            (ind-Absurd
+              (zero-not-add1 n eq)
+              A))
+          (vec.head/step A)) 
+        len-1 
+        (same (add1 len-1))))))
+      
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim False
+  (U -> U))
+(define False
+  (lambda (Type)
+    (-> Type Absurd)))
+
+(claim pem
+  (Pi ((A U))
+    (Either A
+            (False A))))
+
+(claim pem-not-false
+  (Pi ((A U))
+    (False (False (Either A (False A))))))
+  ; or
+  ; (-> (False (Either A) (False A))
+  ;     Absurd)
+(define pem-not-false
+  (lambda (A)
+     (lambda (false-pem)
+       ; we have to return Absurd
+       ; false-pem : (-> (Either A (False A)))
+       (false-pem ; (-> (Either A (False A))
+         (right 
+           (lambda (a)
+             (false-pem (left a))))))))
+
+; (Either A (False A))
+;
+; pem-not-false says:
+;  (pem is false) is false
+;
+; if (pem is false) then absurd
+; 
+; going with the assumption that pem-is-false
+;  we cannot give it an "A" so we give it an (-> A Absurd) 
+; 
+; (false-pem (left a)) ; assuming that pem is false we give it an "left a" which is a contradiction

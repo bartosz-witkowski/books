@@ -1,0 +1,339 @@
+#lang pie
+
+; incr=add1 using replace
+
+(claim step-+ (-> Nat Nat
+                  Nat))
+(define step-+
+  (lambda (n-1 almost-answer)
+    (add1 almost-answer)))
+
+(claim + (-> Nat Nat 
+  Nat))
+(define +
+  (lambda (n m)
+    (rec-Nat
+      n
+      m
+      step-+)))
+
+(claim incr
+  (-> Nat
+      Nat))
+(define incr
+  (lambda (n)
+    (iter-Nat 
+      n
+      1
+      (+ 1))))
+
+;;;;
+; Intuition about replace
+
+(claim zero=zero
+  (= Nat zero zero))
+(define zero=zero
+  (same 0))
+
+(replace
+  zero=zero
+  (lambda (nat)
+    Atom)
+  'whatever)
+
+;;;;
+
+(claim base-incr=add1
+  (= Nat (incr 0) (add1 0)))
+(define base-incr=add1
+  (same (add1 0)))
+
+(claim motive-incr=add1
+  (-> Nat U))
+(define motive-incr=add1
+  (lambda (n)
+    (= Nat (incr n) (add1 n))))
+
+; (replace target motive base) → (motive to)
+;
+;      target : (= X from to)
+;      motive : (→ X U)
+;      base : (motive from)
+;
+; If target is an (= X from to), motive is an
+;
+;    (→ X
+;      U)
+;
+; and base is a (motive from), then (replace target motive base) is a (motive to). 
+
+(claim step-incr=add1-replace-motive
+  (-> Nat Nat U))
+(define step-incr=add1-replace-motive
+  (lambda (n nat-to)
+    (= Nat 
+       ; same as the result "from"
+       (add1 (incr n)) 
+       ; result's "to" abstracted over any nat
+       (add1 nat-to))))
+
+
+(claim step-incr=add1
+  (Pi ((n Nat))
+     (-> (= Nat (incr n) (add1 n))
+         (= Nat (add1 (incr n)) (add1 (add1 n))))))
+(define step-incr=add1
+  (lambda (n) 
+    (lambda (incr_n_=_add1_n)
+      ;                       from           to
+      ; this will be a (= Nat (add1 (incr n)) (add1 (add1 n)))
+      (replace 
+         ; (= Nat (incr n) (add1 n))
+         incr_n_=_add1_n 
+         (step-incr=add1-replace-motive n)
+         ; is a motive `from `
+         (same (add1 (incr n)))))))
+
+
+(claim incr=add1
+  (Pi ((n Nat))
+    (= Nat (incr n) (add1 n))))
+(define incr=add1
+  (lambda (n)
+    (ind-Nat
+      n
+      motive-incr=add1
+      base-incr=add1
+      step-incr=add1)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; for every nat n (twice n) = (double n)
+(claim double (-> Nat Nat))
+(define double
+  (lambda (n)
+    (iter-Nat
+      n
+      0
+      (+ 2))))
+ 
+(claim twice (-> Nat Nat))
+(define twice
+  (lambda (n)
+    (+ n n)))
+     
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Helper lema
+; 
+; ∀ n, m ∈ Nat 
+;    (add1 (n + m)) = (n + (add1 m))
+
+(claim add1+=+add1-motive
+  (-> Nat Nat U))
+(define add1+=+add1-motive
+  (lambda (m k)
+    (= Nat 
+      (add1 (+ k m)) 
+      (+ k (add1 m)))))
+ 
+(claim add1+=+add1-step
+  (Pi ((m Nat)
+       (n Nat))
+    (-> (= Nat (add1 (+ n m)) (+ n (add1 m)))
+	(= Nat (add1 (+ (add1 n) m)) (+ (add1 n) (add1 m))))))
+(define add1+=+add1-step
+  (lambda (m n)
+    (lambda (add1_n+m_=_n+add1m)
+      (cong add1_n+m_=_n+add1m 
+         (the (-> Nat Nat)
+           (lambda (x)
+              (add1 x)))))))
+
+(claim add1+=+add1
+  (Pi ((n Nat)
+       (m Nat))
+    (= Nat
+      (add1 (+ n m))
+      (+ n (add1 m)))))
+(define add1+=+add1
+  (lambda (n m)
+    (ind-Nat n
+      (add1+=+add1-motive m)
+      (same (add1 m))
+      (add1+=+add1-step m))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim base-twice=double
+  (= Nat (twice 0) (double 0)))
+(define base-twice=double
+  (same zero))
+
+(claim motive-twice=double
+  (-> Nat U))
+(define motive-twice=double
+  (lambda (n)
+    (= Nat (twice n) (double n))))
+
+(claim step-twice=double-replace-motive
+  (-> Nat Nat U))
+(define step-twice=double-replace-motive
+  (lambda (n INSERT)
+    (= Nat
+      (add1 INSERT)
+      (add1 (add1 (double n))))))
+ 
+(claim add2 
+  (-> Nat Nat))
+(define add2
+  (lambda (n)
+     (add1 (add1 n))))
+
+(claim step-twice=double
+  (Pi ((n Nat))
+     (-> (= Nat (twice n) (double n))
+	 (= Nat 
+	    (add1 (+ n (add1 n)))
+	    (add1 (add1 (double n)))))))
+(define step-twice=double
+  (lambda (n) 
+    (lambda (twice_n_=_double_n)
+      ;
+      ; we need to get from
+      ; (= Nat
+      ;   (twice n)
+      ;   (double n))
+      ; into a
+      ; (= Nat 
+      ;   (+ (add1 n) (add1 n))  
+      ;   (add1 (add1 (double n))) 
+      ; )
+      ; which is the same as
+      ; (= Nat 
+      ;   (add1 (+ n (add1 n))  
+      ;   (add1 (add1 (double n)))
+      ; )
+      ; 
+      ; if we wrapped from and to in the original expression in a (lambda (n) (add1 (add1 (n))))
+      ; we would get a
+      ; (= Nat
+      ;   (add1 (add1 (twice n))
+      ;   (add1 (add1 (double n)))
+      ;
+      ; which is almost our desired expression differing only in the target/from
+      ;
+      ; this explains the motive for the replace expression:
+      ; (= Nat
+      ;  (add1 INSERT)
+      ;  (add1 (add1 (double n))))))
+      ;
+      ; hence the (expanded) (motive to) should be (+ n (add1 n))
+      ;
+      ; which can be taken from (add1+=+add1 n n)
+      (replace
+	 (add1+=+add1 n n)
+	 (step-twice=double-replace-motive n)
+	 (cong twice_n_=_double_n add2)))))
+ 
+
+(claim twice=double
+  (Pi ((n Nat))
+    (= Nat (twice n) (double n))))
+(define twice=double
+  (lambda (n)
+    (ind-Nat
+      n
+      motive-twice=double
+      base-twice=double
+      step-twice=double)))
+; 
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 
+; ; define a function called twice vec that duplicates each entry in a vector
+
+(claim double-vec/base
+  (Pi ((A U))
+    (-> (Vec A zero)
+        (Vec A (double 0)))))
+(define double-vec/base
+  (lambda (A)
+     (lambda (xs)
+       vecnil)))
+
+(claim double-vec/motive
+  (Pi ((A U))
+    (-> Nat 
+	U)))
+(define double-vec/motive
+  (lambda (A)
+     (lambda (len)
+       (-> (Vec A len)
+           (Vec A (double len))))))
+
+(claim double-vec/step
+  (Pi ((A U)
+       (len-1 Nat))
+    (->
+       (-> (Vec A len-1)
+           (Vec A (double len-1)))
+       (-> (Vec A (add1 len-1))
+           (Vec A (double (add1 len-1)))))))
+(define double-vec/step
+  (lambda (A len-1)
+     (lambda (vec_len-1->vec_double_len-1)
+       (lambda (xs)
+         (vec:: 
+           (head xs) 
+           (vec:: 
+             (head xs)
+             (vec_len-1->vec_double_len-1 (tail xs))))))))
+
+
+(claim double-vec 
+  (Pi ((A U)
+       (len Nat))
+     (-> (Vec A len)
+	 (Vec A (double len)))))
+(define double-vec
+  (lambda (A len)
+    (ind-Nat
+	len
+	(double-vec/motive A)
+	(double-vec/base A)
+	(double-vec/step A))))
+
+(claim twice-vec 
+  (Pi ((A U)
+       (len Nat))
+    (-> (Vec A len)
+        (Vec A (twice len)))))
+(define twice-vec
+  (lambda (A len)
+    (lambda (old-vec)
+      (replace
+        (symm (twice=double len)) 
+        (lambda (k)
+          (Vec A k))
+        (double-vec A len old-vec)))))
+        
+(double-vec Atom 1 (vec:: 'foo vecnil))
+(twice-vec Atom 1 (vec:: 'bar vecnil))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

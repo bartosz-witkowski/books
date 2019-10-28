@@ -1,0 +1,115 @@
+#lang pie
+; reverse, concat
+
+(claim test-list (List Atom))
+(define test-list 
+  (:: 'chives
+    (:: 'mayonnaise
+      (:: 'potato
+        (:: 'butter
+          (:: 'rye-bread
+            (:: 'plate nil)))))))
+
+(claim toppings (List Atom))
+(define toppings 
+  (:: 'potato 
+    (:: 'butter nil)))
+
+(claim step-length
+  (Pi ((A U))
+    (-> A (List A) Nat 
+        Nat)))
+(define step-length
+  (lambda (A)
+    (lambda  (a as almost-answer)
+      (add1 almost-answer))))
+
+(claim length
+  (Pi ((A U))
+    (-> (List A) Nat)))
+(define length
+  (lambda (A)
+    (lambda (xs)
+      (rec-List 
+        xs
+        0
+        (step-length A)))))
+
+(claim step-append
+  (Pi ((A U))
+    (-> A (List A) (List A)
+        (List A))))
+(define step-append
+  (lambda (A)
+     (lambda (a as almost-answer)
+       (:: a almost-answer))))
+
+(claim append
+  (Pi ((A U))
+    (-> (List A) (List A)
+      (List A))))
+(define append
+  (lambda (A)
+    (lambda (xs ys)
+      (rec-List
+         xs
+         ys
+         (step-append A)))))
+
+(claim snoc
+  (Pi ((A U))
+    (-> (List A) A
+      (List A))))
+(define snoc
+  (lambda (A)
+    (lambda (xs x)
+      (append A xs (:: x nil)))))
+      
+(claim step-concat
+  (Pi ((A U))
+    (-> A (List A) (List A)
+        (List A))))
+(define step-concat
+  (lambda (A)
+     (lambda (a as almost-answer)
+       (snoc A almost-answer a))))
+
+(claim concat
+  (Pi ((A U))
+    (-> (List A) (List A)
+       (List A))))
+(define concat
+  (lambda (A)
+    (lambda (xs ys)
+      (rec-List
+        xs
+        ys
+        (step-concat A)))))
+
+(claim step-reverse
+  (Pi ((A U))
+    (-> A (List A) (List A)
+        (List A))))
+(define step-reverse
+  (lambda (A)
+     (lambda (a as almost-answer)
+        (snoc A almost-answer a))))
+
+(claim reverse 
+  (Pi ((A U))
+    (-> (List A) (List A))))
+(define reverse
+  (lambda (A)
+    (lambda (xs)
+      (rec-List
+         xs
+         (the (List A) nil)
+         (step-reverse A)))))
+
+;(length Atom nil)
+;(length Atom (:: 'whatever nil))
+;(length Atom test-list)
+;(append Atom (:: 'first nil) (:: 'second nil))
+;(snoc Atom toppings 'rye-bread)
+;(concat Atom (:: 'first nil) (:: 'second nil))
+(reverse Atom test-list)

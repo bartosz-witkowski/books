@@ -1,0 +1,208 @@
+#lang pie
+
+(claim step-length
+  (Pi ((A U))
+    (-> A (List A) Nat 
+        Nat)))
+(define step-length
+  (lambda (A)
+    (lambda  (a as almost-answer)
+      (add1 almost-answer))))
+
+(claim length
+  (Pi ((A U))
+    (-> (List A) Nat)))
+(define length
+  (lambda (A)
+    (lambda (xs)
+      (rec-List 
+        xs
+        0
+        (step-length A)))))
+
+(claim step-append
+  (Pi ((A U))
+    (-> A (List A) (List A)
+        (List A))))
+(define step-append
+  (lambda (A)
+     (lambda (a as almost-answer)
+       (:: a almost-answer))))
+
+(claim append
+  (Pi ((A U))
+    (-> (List A) (List A)
+      (List A))))
+(define append
+  (lambda (A)
+    (lambda (xs ys)
+      (rec-List
+         xs
+         ys
+         (step-append A)))))
+
+(claim snoc
+  (Pi ((A U))
+    (-> (List A) A
+      (List A))))
+(define snoc
+  (lambda (A)
+    (lambda (xs x)
+      (append A xs (:: x nil)))))
+
+(claim step-reverse
+  (Pi ((A U))
+    (-> A (List A) (List A)
+        (List A))))
+(define step-reverse
+  (lambda (A)
+     (lambda (a as almost-answer)
+        (snoc A almost-answer a))))
+
+(claim reverse 
+  (Pi ((A U))
+    (-> (List A) (List A))))
+(define reverse
+  (lambda (A)
+    (lambda (xs)
+      (rec-List
+         xs
+         (the (List A) nil)
+         (step-reverse A)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim there-exists-a-list-of-atoms-that-is-equal-to-itself-reversed
+  (Sigma ((list (List Atom)))
+    (= (List Atom)
+       list
+       (reverse Atom list))))
+(define there-exists-a-list-of-atoms-that-is-equal-to-itself-reversed
+  (cons (:: 'whatever nil) (same (:: 'whatever nil))))
+
+(claim there-exists-a-list-of-atoms-that-adding-greap-to-the-back-or-front-does-the-same-thing
+  (Sigma ((list (List Atom)))
+    (= (List Atom)
+       (snoc Atom list 'grape)
+       (:: 'grape list))))
+(define there-exists-a-list-of-atoms-that-adding-greap-to-the-back-or-front-does-the-same-thing
+  (cons nil (same (:: 'grape nil))))
+
+(claim list->vec/step
+  (Pi ((A U))
+    (-> A 
+        (List A) 
+        (Sigma ((l1 Nat))
+               (Vec A l1))
+        (Sigma ((l2 Nat))
+          (Vec A l2)))))
+(define list->vec/step
+  (lambda (A)
+    (lambda (first rest len:vec)
+      (cons
+        (add1 (car len:vec))
+        (vec:: first (cdr len:vec))))))
+
+(claim list->vec/base
+  (Pi ((A U))
+    (Sigma ((len Nat))
+     (Vec A len))))
+(define list->vec/base
+  (lambda (A)
+    (cons 0 vecnil)))
+
+(claim list->vec
+  (Pi ((A U))
+    (-> (List A)
+        (Sigma ((len Nat))
+            (Vec A len)))))
+(define list->vec
+  (lambda (A)
+    (lambda (list)
+      (rec-List
+        list
+        (list->vec/base A)
+        (list->vec/step A)))))
+
+(claim test-list (List Atom))
+(define test-list
+  (:: 'foo (:: 'bar (:: 'baz nil))))
+
+(list->vec Atom test-list)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim replicate/motive
+  (Pi ((A U))
+    (-> Nat
+        U)))
+(define replicate/motive
+  (lambda (A)
+    (lambda (len)
+      (Vec A len))))
+
+(claim replicate/step
+  (Pi ((A U)
+       (elem A)
+       (len Nat))
+    (-> 
+      (Vec A len)
+      (Vec A (add1 len)))))
+(define replicate/step
+  (lambda (A elem len)
+    (lambda (old-vec)
+      (vec:: elem old-vec))))
+
+(claim replicate
+  (Pi ((A U)
+       (len Nat))
+  (-> A
+      (Vec A len))))
+(define replicate
+  (lambda (A len)
+    (lambda (elem)
+      (ind-Nat
+         len
+         (replicate/motive A)
+         vecnil
+         (replicate/step A elem)))))
+         
+(replicate Atom 5 'yes)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim list->vec2/motive
+  (Pi ((A U))
+    (-> (List A)
+        U)))
+(define list->vec2/motive
+  (lambda (A)
+    (lambda (list)
+      (Vec A (length A list)))))
+
+
+(claim list->vec2/step
+  (Pi ((A U)
+       (elem A)
+       (list (List A)))
+    (-> (Vec A (length A list))
+        (Vec A (add1 (length A list))))))
+(define list->vec2/step
+  (lambda (A)
+    (lambda (elem rest vec_prev)
+      (vec:: elem vec_prev))))
+
+
+(claim list->vec2
+  (Pi ((A U)
+       (list (List A)))
+    (Vec A (length A list))))
+(define list->vec2
+  (lambda (A list)
+    (ind-List
+      list
+      (list->vec2/motive A)
+      vecnil
+      (list->vec2/step A))))
+      
+(list->vec2 Atom test-list)

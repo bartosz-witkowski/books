@@ -1,0 +1,213 @@
+#lang pie
+ 
+(claim step-+ (-> Nat Nat
+                  Nat))
+(define step-+
+  (lambda (n-1 almost-answer)
+    (add1 almost-answer)))
+
+(claim + (-> Nat Nat 
+  Nat))
+(define +
+  (lambda (n m)
+    (rec-Nat
+      n
+      m
+      step-+)))
+ 
+(claim =consequence
+  (-> Nat 
+      Nat 
+      U))
+(define =consequence
+  (lambda (n1 n2)
+    (which-Nat 
+      n1
+      (which-Nat
+        n2
+        Trivial
+        (lambda (n2-1)
+           Absurd))
+      (lambda (n1-1)
+        (which-Nat
+          n2
+          Absurd
+          (lambda (n2-1)
+            (= Nat n1-1 n2-1)))))))
+
+(claim =consequence-same/step
+  (Pi ((n Nat))
+    (-> (=consequence n n)
+        (=consequence (add1 n) (add1 n)))))
+(define =consequence-same/step
+  (lambda (n)
+    (lambda (consequence-1)
+      (same n))))
+      
+
+(claim =consequence-same
+  (Pi ((n Nat))
+    (=consequence n n)))
+(define =consequence-same
+  (lambda (n)
+    (ind-Nat
+      n
+      (lambda (x)
+        (=consequence x x))
+      sole
+      =consequence-same/step)))
+ 
+(claim use-Nat= 
+  (Pi ((n1 Nat)
+       (n2 Nat))
+    (-> (= Nat n1 n2)
+        (=consequence n1 n2))))
+(define use-Nat=
+  (lambda (n1 n2)
+    (lambda (n1=n2)
+      (replace 
+        n1=n2
+        (lambda (x)
+          (=consequence n1 x))
+        (=consequence-same n1)))))
+
+(claim zero-not-add1
+  (Pi ((n Nat))
+    (-> (= Nat zero (add1 n))
+        Absurd)))
+(define zero-not-add1
+  (lambda (n)
+     (use-Nat= zero (add1 n))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim Dec 
+  (-> U U))
+(define Dec
+  (lambda (X)
+    (Either X
+            (-> X
+                Absurd))))
+
+(claim zero?/motive
+  (-> Nat U))
+(define zero?/motive
+  (lambda (nat)
+    (Dec (= Nat zero nat))))
+
+(claim zero?/step
+  (Pi ((n Nat))
+    (-> (zero?/motive n)
+        (zero?/motive (add1 n)))))
+(define zero?/step
+  (lambda (n)
+    (lambda (whatever_dec_n)
+      (right (zero-not-add1 n)))))
+
+(claim zero?
+  (Pi ((n Nat))
+    (Dec (= Nat zero n))))
+(define zero?
+  (lambda (n)
+    (ind-Nat
+      n
+      zero?/motive
+      (left (same zero))
+      zero?/step)))
+
+(claim sub1=
+  (Pi ((n1 Nat)
+       (n2 Nat))
+    (-> (= Nat (add1 n1) (add1 n2))
+        (= Nat n1 n2))))
+(define sub1=
+  (lambda (n1 n2)
+    (use-Nat= (add1 n1) (add1 n2))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim nat=nat?/motive
+  (-> Nat U))
+(define nat=nat?/motive
+  (lambda (n)
+    (Pi ((other Nat))
+      (Dec (= Nat n other)))))
+
+(claim nat=nat?/base
+  (Pi ((other Nat))
+    (Dec (= Nat zero other))))
+(define nat=nat?/base
+  (lambda (other)
+    (zero? other)))
+
+(claim add1-not-zero
+  (Pi ((n Nat))
+    (-> (= Nat (add1 n) zero)
+        Absurd)))
+(define add1-not-zero
+  (lambda (n)
+    (use-Nat= (add1 n) zero)))
+
+(claim n-1=m-1?_=>_n=m?
+  (Pi ((n-1 Nat)
+       (m-1 Nat))
+    (-> (Dec (= Nat n-1 m-1))
+        (Dec (= Nat (add1 n-1) (add1 m-1))))))
+(define n-1=m-1?_=>_n=m?
+  (lambda (n-1 m-1)
+    (lambda (n-1=m-1)
+      (ind-Either
+        ; target
+        n-1=m-1
+        ; motive
+        (lambda (e)
+           (Dec (= Nat (add1 n-1) (add1 m-1))))
+        ; on left
+        (lambda (n-1=m-1)
+           (left
+             (cong n-1=m-1 (+ 1))))
+        ; on right
+        (lambda (n-1=m-1->absurd)
+          (right
+            (lambda (n=m)
+              (n-1=m-1->absurd (sub1= n-1 m-1 n=m)))))))))
+
+(claim nat=nat?/step
+  (Pi ((n Nat))
+    (-> (Pi ((other Nat))
+           (Dec (= Nat n other)))
+        (Pi ((other Nat))
+           (Dec (= Nat (add1 n) other))))))
+(define nat=nat?/step
+  (lambda (n)
+    (lambda (nat-1=nat?)
+      (lambda (other)
+        (ind-Nat 
+          ; target
+          other
+          ; motive
+          (lambda (m)
+            (Dec (= Nat (add1 n) m)))
+          ; base
+	  (right 
+            (add1-not-zero n))
+	  (lambda (m nat=nat-1?)
+            (n-1=m-1?_=>_n=m? n m (nat-1=nat? m))))))))
+
+      
+(claim nat=nat?
+  (Pi ((n1 Nat)
+       (n2 Nat))
+    (Dec (= Nat n1 n2))))
+(define nat=nat?
+  (lambda (n1 n2)
+    (
+      (ind-Nat
+        n1
+        nat=nat?/motive
+        nat=nat?/base
+        nat=nat?/step)
+      n2
+    )
+  )
+)
